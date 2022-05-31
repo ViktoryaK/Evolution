@@ -33,10 +33,9 @@ class State:
         """
         for _ in range(len(weights)):
             # Exceptional use
-            if conditions[_] == 'ignore' or weights[_] is None:
+            if conditions[_] == 'ignore' or input_list[_] is None:
                 continue
             # Evaluating whether condition was satisfied by input.
-            print(str(input_list[_]) + conditions[_] + str(weights[_]) + ' is ' + str(eval(str(input_list[_]) + conditions[_] + str(weights[_]))))
             if eval(str(input_list[_]) + conditions[_] + str(weights[_])) is False:
                 return False
         return True
@@ -55,8 +54,7 @@ class Brain:
             assert self.is_correct_genome(genome)
         except AssertionError:
             print("INCORRECT GENOME - YOU KILLED A PHAGE")
-            exit(1)
-        # self.genome = genome
+            raise ValueError
         self.input_state = None
         self._build_brain(genome)
 
@@ -127,6 +125,7 @@ class Brain:
         input_list contains 5 integers: E, x, y, dx, dy.
         dx = x - x* and dy = y - y*.
         """
+        print(f"Input list: {input_list}")
         current_state = self.input_state
         while not current_state.is_terminal:
             current_state = self.forward(current_state, input_list)
@@ -140,6 +139,16 @@ def test_brain():
     print("Input:", input_list)
     b = Brain(genome)
     print("Final state:", b.get_final_state(input_list))
+
+
+def crate_random_genome():
+    while True:
+        try:
+            genome = [random.randint(-100, 100) for _ in range(18)]
+            assert Brain.is_correct_genome(genome)
+            return genome
+        except AssertionError:
+            continue
 
 
 if __name__ == '__main__':
