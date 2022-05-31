@@ -7,6 +7,7 @@ Processes each creature's move, checks if a move is valid.
               For commercial use only.
 -----------------------------------------------------------
 """
+import time
 from copy import deepcopy
 from random import sample
 from phage import *
@@ -18,6 +19,7 @@ class Map:
     Map class
     Enter the length of side of a square
     """
+    loss_one_energy = 5
 
     def __init__(self, size=100) -> None:
         """
@@ -71,14 +73,13 @@ class Map:
         distance - radius of searching
         """
         res = []
-        for height in range(2 * distance):
-            for length in range(2 * distance):
+        for height in range(2 * distance + 1):
+            for length in range(2 * distance + 1):
                 new_height, new_length = position[0] - distance + height, position[1] - distance + length
-                print(new_height, new_length)
-                if 0 <= height < self.size and 0 <= length < self.size:
-                    square = self.map[height][length]
+                if 0 <= new_height < self.size and 0 <= new_length < self.size:
+                    square = self.map[new_height][new_length]
                     if square is not None and isinstance(square, stranger):
-                        res.append((height, length))
+                        res.append((new_height, new_length))
         return res
 
     @staticmethod
@@ -90,6 +91,56 @@ class Map:
         return list(sorted(strangers, key=lambda item: abs(pos[0] - item[0]) + abs(pos[1] - item[1])))[
             0] if strangers else None
 
+    def what_they_want_from_me(self) -> dict:
+        """
+        Iterating through map, asking creatures their desires
+        """
+        phage_wantings = dict()
+        for hey, row in enumerate(self.map):
+            for length, elem in enumerate(row):
+                if elem is not None:
+                    strangers = self.get_nearest_strangers(position=(hey, length),
+                                                           distance=2,
+                                                           stranger=ChloroPhage if isinstance(elem, HunterPhage)
+                                                           else HunterPhage)
+                    if strangers:
+                        position_of_stranger = self.choose_closest_stranger((hey, length), strangers)
+                        dx, dy = hey - position_of_stranger[0], length - position_of_stranger[1]
+                    else:
+                        dx, dy = None, None
+                    phage_wantings[(hey, length)] = elem.get_next_move(dx, dy)
+        return phage_wantings
+
+    def get_coords(self, now: tuple, action: str) -> tuple:
+        """
+        Gets coords of new move, where action - "Up", "Down", "Left", "Right"
+        """
+        if action == "Up":
+            hey, length = now[0] - 1, now[1]
+        elif action == "Down":
+            hey, length = now[0] + 1, now[1]
+        elif action == "Left":
+            hey, length = now[0], now[1] - 1
+        elif action == "Right":
+            hey, length = now[0], now[1] + 1
+        else:
+            print("Dude something went wrong")
+            return None
+        return hey, length if 0 <= hey < self.size and 0 <= length < self.size else now
+
+    def satisfy_desires(self, phage_wants: dict) -> None:
+        """
+        Gives phages exactly what they want
+        """
+
+        for position, action in phage_wants.items():
+            coords = self.get_coords(position, action)
+            if coords is None:
+                self.give_energy(position) if action == "Energy" else self.process_death(position)
+            else:
+                if self.map[coords[0]][coords[1]] is None:
+                    self.make_phage_move(now=position, future=coords)
+
     def cycle(self, generations: int) -> list[list[list]]:
         """
         Runs a simulation 'generations' times
@@ -97,27 +148,9 @@ class Map:
         """
         all_states = []
         for i in range(generations):
-            # iterating through map, asking creatures their desires
-            phage_wantings = dict()
-            for hey, row in enumerate(self.map):
-                for length, elem in enumerate(row):
-                    if elem is not None:
-                        strangers = self.get_nearest_strangers(position=(hey, length),
-                                                               distance=2,
-                                                               stranger=ChloroPhage if isinstance(elem, HunterPhage)
-                                                               else HunterPhage)
-                        position_of_stranger = self.choose_closest_stranger((hey, length), strangers)
-                        if position_of_stranger is not None:
-                            dx, dy = hey - position_of_stranger[0], length - position_of_stranger[1]
-                        else:
-                            dx, dy = None, None
-                        phage_wantings[(hey, length)] = elem.get_next_move(dx, dy)
-                        # print(phage_wantings[(hey, length)])
-
-            # performing what they want:
-            # ....
-
-            all_states.append(deepcopy(self.map))
+            phage_wants = self.what_they_want_from_me()  # iterating through map, asking creatures their desires:
+            self.satisfy_desires(phage_wants)  # performing what they want
+            all_states.append(deepcopy(self.map))  # saving map state
         return all_states
 
 
@@ -126,4 +159,3 @@ if __name__ == "__main__":
     board.generate_creatures(num_of_enemies=40, num_of_preys=100)
     simulation = board.cycle(100)
     give_vika = list(map(lambda state: Map.give_to_vika(state), simulation))
-    # print(board)
