@@ -1,13 +1,18 @@
 """
 A module for a map of a simulation. Logic for maps updates.
 Processes each creature's move, checks if a move is valid.
+
+
+
 -----------------------------------------------------------
-         Developed by Mr. Korch on last day of spring
+         Designed by Mr. Korch on last day of spring
                 No rights reserved.
               For commercial use only.
 -----------------------------------------------------------
+
+
+
 """
-import time
 from copy import deepcopy
 from random import sample
 from phage import *
@@ -19,7 +24,10 @@ class Map:
     Map class
     Enter the length of side of a square
     """
-    loss_one_energy = 5
+    loss_for_move = 5
+    loss_for_stay = 2
+    one_move_gain = 5
+    kill_gain = 20
 
     def __init__(self, size=100) -> None:
         """
@@ -38,7 +46,7 @@ class Map:
         for position in self.get_random_positions(num_of_preys):
             self.set_org_on_map(organism=ChloroPhage(create_random_genome()), coords=position)
 
-    def set_org_on_map(self, organism, coords: tuple) -> None:
+    def set_org_on_map(self, organism: Phage, coords: tuple) -> None:
         """
         Sets a map with one 'organism'
         :param organism: Creature
@@ -46,6 +54,7 @@ class Map:
         :return: None
         """
         self.map[coords[0]][coords[1]] = organism
+        organism.position = coords
 
     def get_random_positions(self, number: int) -> list[tuple]:
         """
@@ -124,22 +133,84 @@ class Map:
         elif action == "Right":
             hey, length = now[0], now[1] + 1
         else:
-            print("Dude something went wrong")
+            print(action)
             return None
         return hey, length if 0 <= hey < self.size and 0 <= length < self.size else now
+
+    def make_phage_move(self, now: tuple, future: tuple) -> None:
+        """
+        Makes a move on a board, frees 'new' square, occupies 'future' one
+        """
+        phage = self.get_obj_on_pos(now)
+        if self.get_obj_on_pos(future) is None:
+            phage.energy -= self.loss_for_move
+            self.set_org_on_map(phage, future)
+            self.map[now[0]][now[1]] = None
+        else:
+            phage.energy -= self.loss_for_stay
+
+    def get_obj_on_pos(self, pos: tuple):
+        """
+        Returns an object by pos on a map
+        """
+        return self.map[pos[0]][pos[1]]
+
+    def kill_if_possible(self, position: tuple) -> None:
+        """
+        For HunterPhage, kills a ChloroPhage if possible,
+        otherwise stays and loses energy
+        """
+        # TODO: finish, DEBUG
+        radius = 1
+        phage = self.get_obj_on_pos(position)
+
+        for height in range(2 * radius + 1):
+            for length in range(2 * radius + 1):
+
+                new_height, new_length = position[0] - radius + height, position[1] - radius + length
+                if 0 <= new_height < self.size and 0 <= new_height < self.size:
+                    obj = self.get_obj_on_pos((new_height, new_length))
+                    if isinstance(obj, ChloroPhage):
+                        del self.map[new_height][new_length]
+                        self.map[new_height][new_length] = None
+                        phage.energy += self.kill_gain
+                        return
+
+        phage.energy -= self.loss_for_stay
+
+    def give_energy(self, position: tuple) -> None:
+        """
+        Gives the energy to the phage
+        """
+        phage = self.get_obj_on_pos(position)
+        if isinstance(phage, ChloroPhage):
+            phage.energy += self.one_move_gain
+        elif isinstance(phage, HunterPhage):
+            self.kill_if_possible(position)
+        else:
+            print("DUUUUUUUDEEE YOU'VE FUCKED UP :(")
+            exit(1)
+
+    def process_death(self, position: tuple) -> None:
+        """
+        Processes death of a phage
+        """
+        # TODO: maybe DEBUG THIS
+        del self.map[position[0]][position[1]]
+        self.map[position[0]][position[1]] = None
 
     def satisfy_desires(self, phage_wants: dict) -> None:
         """
         Gives phages exactly what they want
         """
-
         for position, action in phage_wants.items():
+            action = action.name
             coords = self.get_coords(position, action)
             if coords is None:
                 self.give_energy(position) if action == "Energy" else self.process_death(position)
             else:
-                if self.map[coords[0]][coords[1]] is None:
-                    self.make_phage_move(now=position, future=coords)
+                # print(coords, position, action)
+                self.make_phage_move(now=position, future=coords)
 
     def cycle(self, generations: int) -> list[list[list]]:
         """
@@ -149,6 +220,7 @@ class Map:
         all_states = []
         for i in range(generations):
             phage_wants = self.what_they_want_from_me()  # iterating through map, asking creatures their desires:
+            # TODO: shuffle a dictionary for more realistic simulation
             self.satisfy_desires(phage_wants)  # performing what they want
             all_states.append(deepcopy(self.map))  # saving map state
         return all_states
