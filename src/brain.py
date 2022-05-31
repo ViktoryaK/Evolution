@@ -141,7 +141,7 @@ def test_brain():
     print("Final state:", b.get_final_state(input_list))
 
 
-def crate_random_genome():
+def create_random_genome():
     while True:
         try:
             genome = [random.randint(-100, 100) for _ in range(18)]
