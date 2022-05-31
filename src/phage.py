@@ -10,7 +10,7 @@ The main difference between ChloralPhage and SlayerPhage:
 #         For educational use only.         #
 ---------------------------------------------
 """
-from src.brain import Brain
+from brain import Brain, crate_random_genome
 
 MAX_ENERGY = 100
 
@@ -33,7 +33,6 @@ class Phage:
     @genome.setter
     def genome(self, new_genome: list):
         self._brain = Brain(new_genome)
-
 
     @property
     def position(self):
@@ -69,8 +68,21 @@ class HunterPhage(Phage):
     HunterPhage class.
     Contains also get_next_move() function.
     """
+
     def __init__(self, genome):
         super().__init__(genome)
 
     def get_next_move(self, dx=None, dy=None):
         return super().get_next_move(-dx, -dy)
+
+
+def test_phage():
+    genome = crate_random_genome()
+    print("Genome:", genome)
+    phage = ChloroPhage(genome)
+    phage.position = (50, 50)
+    print(phage.get_next_move(1, 2))
+
+
+if __name__ == '__main__':
+    test_phage()
