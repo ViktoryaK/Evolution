@@ -133,9 +133,9 @@ class Map:
         elif action == "Right":
             hey, length = now[0], now[1] + 1
         else:
-            print(action)
             return None
-        return hey, length if 0 <= hey < self.size and 0 <= length < self.size else now
+
+        return (hey, length) if 0 <= hey < self.size and 0 <= length < self.size else (now[0], now[1])
 
     def make_phage_move(self, now: tuple, future: tuple) -> None:
         """
@@ -166,12 +166,10 @@ class Map:
 
         for height in range(2 * radius + 1):
             for length in range(2 * radius + 1):
-
                 new_height, new_length = position[0] - radius + height, position[1] - radius + length
-                if 0 <= new_height < self.size and 0 <= new_height < self.size:
+                if 0 <= new_height < self.size and 0 <= new_length < self.size:
                     obj = self.get_obj_on_pos((new_height, new_length))
                     if isinstance(obj, ChloroPhage):
-                        del self.map[new_height][new_length]
                         self.map[new_height][new_length] = None
                         phage.energy += self.kill_gain
                         return
@@ -195,8 +193,7 @@ class Map:
         """
         Processes death of a phage
         """
-        # TODO: maybe DEBUG THIS
-        del self.map[position[0]][position[1]]
+        # TODO: DEBUG this
         self.map[position[0]][position[1]] = None
 
     def satisfy_desires(self, phage_wants: dict) -> None:
@@ -204,13 +201,13 @@ class Map:
         Gives phages exactly what they want
         """
         for position, action in phage_wants.items():
-            action = action.name
-            coords = self.get_coords(position, action)
-            if coords is None:
-                self.give_energy(position) if action == "Energy" else self.process_death(position)
-            else:
-                # print(coords, position, action)
-                self.make_phage_move(now=position, future=coords)
+            if self.get_obj_on_pos(position) is not None:
+                action = action.name
+                coords = self.get_coords(position, action)
+                if coords is None:
+                    self.give_energy(position) if action == "Energy" else self.process_death(position)
+                else:
+                    self.make_phage_move(now=position, future=coords)
 
     def cycle(self, generations: int) -> list[list[list]]:
         """
