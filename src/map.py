@@ -104,14 +104,15 @@ class Map:
                     if elem is not None:
                         strangers = self.get_nearest_strangers(position=(hey, length),
                                                                distance=2,
-                                                               stranger=ChloroPhage if isinstance(elem,
-                                                                                                  HunterPhage) else HunterPhage)
-                        pos_of_stranger = self.choose_closest_stranger(strangers)
-                        if pos_of_stranger is not None:
-                            dx, dy = hey - pos_of_stranger[0], length - pos_of_stranger[1]
+                                                               stranger=ChloroPhage if isinstance(elem, HunterPhage)
+                                                               else HunterPhage)
+                        position_of_stranger = self.choose_closest_stranger((hey, length), strangers)
+                        if position_of_stranger is not None:
+                            dx, dy = hey - position_of_stranger[0], length - position_of_stranger[1]
                         else:
                             dx, dy = None, None
                         phage_wantings[(hey, length)] = elem.get_next_move(dx, dy)
+                        # print(phage_wantings[(hey, length)])
 
             # performing what they want:
             # ....

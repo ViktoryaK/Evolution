@@ -76,7 +76,8 @@ class HunterPhage(Phage):
         super().__init__(genome)
 
     def get_next_move(self, dx=None, dy=None):
-        return super().get_next_move(-dx, -dy)
+        return super().get_next_move(None, None) if dx is None or dy is None\
+            else super().get_next_move(-dx, -dy)
 
     def __repr__(self):
         return "red"
