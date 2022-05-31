@@ -63,6 +63,33 @@ class Map:
         """
         return [[repr(item) for item in one_board[i]] for i in range(len(one_board))]
 
+    def get_nearest_strangers(self, position: tuple, stranger, distance=2) -> list[tuple]:
+        """
+        Returns a list of the closest strangers by number of steps to get to
+        position - position of a Phage
+        stranger - rival (opposite) class
+        distance - radius of searching
+        """
+        res = []
+        for height in range(2 * distance):
+            for length in range(2 * distance):
+                new_height, new_length = position[0] - distance + height, position[1] - distance + length
+                print(new_height, new_length)
+                if 0 <= height < self.size and 0 <= length < self.size:
+                    square = self.map[height][length]
+                    if square is not None and isinstance(square, stranger):
+                        res.append((height, length))
+        return res
+
+    @staticmethod
+    def choose_closest_stranger(pos: tuple, strangers: list[tuple]) -> tuple:
+        """
+        Returns the closest stranger to Phage's position - pos
+        Strangers positions - 'strangers'
+        """
+        return list(sorted(strangers, key=lambda item: abs(pos[0] - item[0]) + abs(pos[1] - item[1])))[
+            0] if strangers else None
+
     def cycle(self, generations: int) -> list[list[list]]:
         """
         Runs a simulation 'generations' times
@@ -73,11 +100,18 @@ class Map:
             # iterating through map, asking creatures their desires
             phage_wantings = dict()
             for hey, row in enumerate(self.map):
-                for leng, elem in enumerate(row):
+                for length, elem in enumerate(row):
                     if elem is not None:
-                        dx, dy = None, None
-                        # TODO: NAZAR WTF шо то dx i dy таке
-                        phage_wantings[(hey, leng)] = elem.get_next_move(dx, dy)
+                        strangers = self.get_nearest_strangers(position=(hey, length),
+                                                               distance=2,
+                                                               stranger=ChloroPhage if isinstance(elem,
+                                                                                                  HunterPhage) else HunterPhage)
+                        pos_of_stranger = self.choose_closest_stranger(strangers)
+                        if pos_of_stranger is not None:
+                            dx, dy = hey - pos_of_stranger[0], length - pos_of_stranger[1]
+                        else:
+                            dx, dy = None, None
+                        phage_wantings[(hey, length)] = elem.get_next_move(dx, dy)
 
             # performing what they want:
             # ....
