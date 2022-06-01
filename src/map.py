@@ -13,6 +13,8 @@ Processes each creature's move, checks if a move is valid.
 
 
 """
+from __future__ import annotations
+
 from copy import deepcopy
 from random import sample
 from phage import *
@@ -24,6 +26,7 @@ class Map:
     Map class
     Enter the length of side of a square
     """
+    # TODO: levels of photosynthesis
     loss_for_move = 5
     loss_for_stay = 2
     one_move_gain = 5
@@ -34,7 +37,23 @@ class Map:
         creating 2D array representation
         """
         self.size = size
+        # TODO: 2D Array maybe?
         self.map = [[None for _ in range(self.size)] for _ in range(self.size)]
+
+    def __getitem__(self, position: tuple) -> None | Phage:
+        """
+        Returns an object by pos on a map
+        Easy access to the board
+        position - coords
+        """
+        return self.map[position[0]][position[1]]
+
+    def __setitem__(self, position: tuple, value: None | Phage) -> None:
+        """
+        Easy access to the changes of a board
+        position - coords
+        """
+        self.map[position[0]][position[1]] = value
 
     def generate_creatures(self, num_of_enemies: int, num_of_preys: int) -> None:
         """
@@ -53,7 +72,8 @@ class Map:
         :param coords: tuple (y, x)
         :return: None
         """
-        self.map[coords[0]][coords[1]] = organism
+        self[coords] = organism
+        # self.map[coords[0]][coords[1]] = organism
         organism.position = coords
 
     def get_random_positions(self, number: int) -> list[tuple]:
@@ -61,7 +81,7 @@ class Map:
         Returns a list of random, not yet filled positions
         """
         free_squares = [(height, length) for height in range(self.size) for length in range(self.size) if
-                        self.map[height][length] is None]
+                        self[height, length] is None]
         return sample(free_squares, number)
 
     def __repr__(self):
@@ -86,7 +106,7 @@ class Map:
             for length in range(2 * distance + 1):
                 new_height, new_length = position[0] - distance + height, position[1] - distance + length
                 if 0 <= new_height < self.size and 0 <= new_length < self.size:
-                    square = self.map[new_height][new_length]
+                    square = self[new_height, new_length]
                     if square is not None and isinstance(square, stranger):
                         res.append((new_height, new_length))
         return res
@@ -120,7 +140,7 @@ class Map:
                     phage_wantings[(hey, length)] = elem.get_next_move(dx, dy)
         return phage_wantings
 
-    def get_coords(self, now: tuple, action: str) -> tuple:
+    def get_coords(self, now: tuple, action: str) -> tuple | None:
         """
         Gets coords of new move, where action - "Up", "Down", "Left", "Right"
         """
@@ -141,36 +161,27 @@ class Map:
         """
         Makes a move on a board, frees 'new' square, occupies 'future' one
         """
-        phage = self.get_obj_on_pos(now)
-        if self.get_obj_on_pos(future) is None:
+        phage = self[now]
+        if self[future] is None:
             phage.energy -= self.loss_for_move
             self.set_org_on_map(phage, future)
-            self.map[now[0]][now[1]] = None
+            self[now] = None
         else:
             phage.energy -= self.loss_for_stay
 
-    def get_obj_on_pos(self, pos: tuple):
-        """
-        Returns an object by pos on a map
-        """
-        return self.map[pos[0]][pos[1]]
-
-    def kill_if_possible(self, position: tuple) -> None:
+    def kill_if_possible(self, position: tuple, phage: Phage) -> None:
         """
         For HunterPhage, kills a ChloroPhage if possible,
         otherwise stays and loses energy
         """
-        # TODO: finish, DEBUG
         radius = 1
-        phage = self.get_obj_on_pos(position)
-
         for height in range(2 * radius + 1):
             for length in range(2 * radius + 1):
                 new_height, new_length = position[0] - radius + height, position[1] - radius + length
                 if 0 <= new_height < self.size and 0 <= new_length < self.size:
-                    obj = self.get_obj_on_pos((new_height, new_length))
+                    obj = self[new_height, new_length]
                     if isinstance(obj, ChloroPhage):
-                        self.map[new_height][new_length] = None
+                        self[new_height, new_length] = None
                         phage.energy += self.kill_gain
                         return
 
@@ -180,11 +191,11 @@ class Map:
         """
         Gives the energy to the phage
         """
-        phage = self.get_obj_on_pos(position)
+        phage = self[position]
         if isinstance(phage, ChloroPhage):
             phage.energy += self.one_move_gain
         elif isinstance(phage, HunterPhage):
-            self.kill_if_possible(position)
+            self.kill_if_possible(position=position, phage=phage)
         else:
             print("DUUUUUUUDEEE YOU'VE FUCKED UP :(")
             exit(1)
@@ -193,15 +204,14 @@ class Map:
         """
         Processes death of a phage
         """
-        # TODO: DEBUG this
-        self.map[position[0]][position[1]] = None
+        self[position] = None
 
     def satisfy_desires(self, phage_wants: dict) -> None:
         """
         Gives phages exactly what they want
         """
         for position, action in phage_wants.items():
-            if self.get_obj_on_pos(position) is not None:
+            if self[position] is not None:
                 action = action.name
                 coords = self.get_coords(position, action)
                 if coords is None:
