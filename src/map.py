@@ -94,6 +94,20 @@ class Map:
         """
         return [[repr(item) for item in one_board[i]] for i in range(len(one_board))]
 
+    @staticmethod
+    def give_to_olli(one_board: list[list]) -> tuple[list, list]:
+        """
+        Returns two lists of phages of different types
+        Special for Olli with love
+        first - ChloroPhage, second - HunterPhage
+        """
+        chloro, hunter = [], []
+        for row in one_board:
+            for el in row:
+                if el is not None:
+                    chloro.append(el) if isinstance(el, ChloroPhage) else hunter.append(el)
+        return chloro, hunter
+
     def get_nearest_strangers(self, position: tuple, stranger, distance=2) -> list[tuple]:
         """
         Returns a list of the closest strangers by number of steps to get to
@@ -238,3 +252,4 @@ if __name__ == "__main__":
     board.generate_creatures(num_of_enemies=40, num_of_preys=100)
     simulation = board.cycle(100)
     give_vika = list(map(lambda state: Map.give_to_vika(state), simulation))
+    give_olli = list(map(lambda state: Map.give_to_olli(state), simulation))
