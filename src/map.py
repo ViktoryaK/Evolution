@@ -252,4 +252,4 @@ if __name__ == "__main__":
     board.generate_creatures(num_of_enemies=40, num_of_preys=100)
     simulation = board.cycle(100)
     give_vika = list(map(lambda state: Map.give_to_vika(state), simulation))
-    give_olli = list(map(lambda state: Map.give_to_olli(state), simulation))
+    give_olli = Map.give_to_olli(simulation[-1])
