@@ -129,7 +129,7 @@ class Map:
             for length, elem in enumerate(row):
                 if elem is not None:
                     strangers = self.get_nearest_strangers(position=(hey, length),
-                                                           distance=2,
+                                                           distance=5,
                                                            stranger=ChloroPhage if isinstance(elem, HunterPhage)
                                                            else HunterPhage)
                     if strangers:
