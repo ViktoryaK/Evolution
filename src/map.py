@@ -15,6 +15,7 @@ Processes each creature's move, checks if a move is valid.
 """
 from __future__ import annotations
 
+import random
 import time
 from copy import deepcopy
 from random import sample
@@ -35,7 +36,6 @@ class Map:
     Map class
     Enter the length of side of a square
     """
-    # TODO: levels of photosynthesis
     loss_for_move = 5
     loss_for_stay = 2
     one_move_gain = 5
@@ -152,6 +152,10 @@ class Map:
                     else:
                         dx, dy = None, None
                     phage_wantings[(hey, length)] = elem.get_next_move(dx, dy)
+
+        key_value_list = [(key, value) for key, value in phage_wantings.items()]
+        random.shuffle(key_value_list)
+        phage_wantings = {item[0]: item[1] for item in key_value_list}
         return phage_wantings
 
     def get_coords(self, now: tuple, action: str) -> tuple | None:
@@ -269,7 +273,6 @@ class Map:
             if not i % self.when_make_kids:
                 self.lets_make_kids()  # processes multiplication of phages
             phage_wants = self.what_they_want_from_me()  # iterating through map, asking creatures their desires:
-            # TODO: shuffle a dictionary for more realistic simulation
             self.satisfy_desires(phage_wants)  # performing what they want
             all_states.append(deepcopy(self.map))  # saving map state
         return all_states
@@ -281,5 +284,3 @@ if __name__ == "__main__":
     board.generate_creatures(num_of_enemies=40, num_of_preys=100)
     simulation = board.cycle(100)
     give_vika = list(map(lambda state: give_to_vika(state), simulation))
-    print(time.perf_counter() - start)
-
