@@ -61,6 +61,9 @@ def get_pair_genome(genom1, genom2, prob=0.05):
 
 
 def distance_satisfies(phage1: Phage, phage2: Phage):
+    """
+    check if phages are close enough to each other
+    """
     distance = abs(phage1.position[0] - phage2.position[0]) + abs(phage1.position[1] - phage2.position[1])
     return distance <= 10
 
