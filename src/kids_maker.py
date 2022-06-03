@@ -1,13 +1,18 @@
-'''
-to generate children
-'''
+"""
+Helpful module to create a new generation
+Create pairs, return dead phages
+"""
+
 import random
-from phage import Phage
+from phage import Phage, ChloroPhage, HunterPhage
+
+# TODO:
+
 
 def get_pair_genome(genom1, genom2, prob = 0.05):
-    '''
+    """
     get father's and mother's genoms, merge them and return child
-    '''
+    """
     child = []
     for i in range(len(genom1)):
         child_genom = (genom1[i] + genom2[i]) // 2
@@ -53,32 +58,83 @@ def get_pair_genome(genom1, genom2, prob = 0.05):
         child[rand_ind] = joined_int
     return child
 
-def int_genertor():
-    '''
-    help function to generate gens
-    '''
-    empty = []
-    for _ in range(18):
-        empty.append(random.randint(0, 200))
-    return empty
+def distance_satisfies(phage1: Phage, phage2: Phage):
+    distance = abs(phage1.position[0] - phage2.position[0]) + abs(phage1.position[1] - phage2.position[1])
+    return distance <= 10
 
-def get_childs(phag1, phag2):
-    '''
-    return genoms' children
-    '''
-    # genom1 = phag1.genom
-    # genom2 = phag2.genom
+def create_pairs(list_of_phages: list) -> list[tuple]:
+    """
+    Creates list of tuples - two parents
+    """
+    pairs = []
+    dead_phages = []
+
+    def help(phages: list[Phage]):
+        if not phages:
+            return pairs
+        first = phages[0]
+        for phage in phages[1:]:
+            if distance_satisfies(first, phage):
+                pairs.append((first, phage))
+                for elem in (first, phage):
+                    phages.remove(elem)
+                    dead_phages.append(elem)
+                help(phages)
+                return
+        phages.remove(first)
+        # dead_phages.append(first)
+        help(phages)
+    help(list_of_phages)
+    return pairs, dead_phages
+
+
+def start_reproducing(list_of_phages: list):
+    """
+    create pairs, make kids
+    return list of kids(full of objects), dead phages
+    """
+    result_of_reproduction = []
+    type_of_phage = isinstance(list_of_phages[0], ChloroPhage)
+    pairs, dead_phages = create_pairs(list_of_phages)
+    for pair in pairs:
+        list_of_children = get_childs(*pair, type_of_phage)
+        for kid in list_of_children:
+            result_of_reproduction.append(kid)
+    return result_of_reproduction, dead_phages
+
+
+# def int_generator():
+#     '''
+#     help function to generate gens
+#     '''
+#     empty = []
+#     for _ in range(18):
+#         empty.append(random.randint(0, 200))
+#     return empty
+
+def get_childs(phage1: Phage, phage2:Phage, type_of_phage):
+    """
+    return list of childrens' objects
+    """
+    genom1 = phage1.genome
+    genom2 = phage2.genome
     number_of_children = random.randint(1, 4)
     list_of_children = []
-    for _ in range(number_of_children):
-        list_of_children.append(get_pair_genome(genom1, genom2))
+    parents_pos = [phage1.position, phage2.position]
+    random.shuffle(parents_pos)
+    for child in range(number_of_children):
+        child_pos = parents_pos[child%2]
+        if type_of_phage:
+            chlorophage = ChloroPhage(get_pair_genome(genom1, genom2))
+            chlorophage.position = (child_pos)
+            list_of_children.append(chlorophage)
+        else:
+            hunterphage = HunterPhage(get_pair_genome(genom1, genom2))
+            hunterphage.position = (child_pos)
+            list_of_children.append(HunterPhage(get_pair_genome(genom1, genom2)))
     return list_of_children
 
-# genom1 = int_genertor()
-# print(genom1)
-# genom2 = int_genertor()
-# print(genom2)
-genom1 = [15, 112, 3, 120, 176, 71, 137, 121, 62, 42, 197, 1, 60, 108, 155, 135, 160, 43]
-genom2 = [20, 107, 91, 77, 153, 54, 153, 149, 104, 46, 180, 145, 89, 49, 107, 187, 14, 143]
+# genom1 = [15, 112, 3, 120, 176, 71, 137, 121, 62, 42, 197, 1, 60, 108, 155, 135, 160, 43]
+# genom2 = [20, 107, 91, 77, 153, 54, 153, 149, 104, 46, 180, 145, 89, 49, 107, 187, 14, 143]
 
 # print(get_childs(genom1, genom2))
