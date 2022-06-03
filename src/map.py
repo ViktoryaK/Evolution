@@ -283,9 +283,3 @@ if __name__ == "__main__":
     give_vika = list(map(lambda state: give_to_vika(state), simulation))
     print(time.perf_counter() - start)
 
-    # simulation = board.cycle(20)
-    # list_of_chloro_phages, list_of_hunter_phages = Map.give_to_olli(simulation[-1])
-    # print(f"greens: {len(list_of_chloro_phages)}")
-    # print(f"reds: {len(list_of_hunter_phages)}")
-    # chloro_kids, chloro_dead = start_reproducing(list_of_chloro_phages)
-    # hunter_kids, hunter_dead = start_reproducing(list_of_hunter_phages)
