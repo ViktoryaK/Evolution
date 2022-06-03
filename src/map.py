@@ -134,7 +134,7 @@ class Map:
         return list(sorted(strangers, key=lambda item: abs(pos[0] - item[0]) + abs(pos[1] - item[1])))[
             0] if strangers else None
 
-    def what_they_want_from_me(self) -> dict:
+    def what_do_they_want_from_me(self) -> dict:
         """
         Iterating through map, asking creatures their desires
         """
@@ -148,15 +148,14 @@ class Map:
                                                            else HunterPhage)
                     if strangers:
                         position_of_stranger = self.choose_closest_stranger((hey, length), strangers)
-                        dx, dy = hey - position_of_stranger[0], length - position_of_stranger[1]
+                        dy, dx = hey - position_of_stranger[0], length - position_of_stranger[1]
                     else:
-                        dx, dy = None, None
-                    phage_wantings[(hey, length)] = elem.get_next_move(dx, dy)
+                        dy, dx = None, None
+                    phage_wantings[(hey, length)] = elem.get_next_move(dy, dx)
 
         key_value_list = [(key, value) for key, value in phage_wantings.items()]
         random.shuffle(key_value_list)
-        phage_wantings = {item[0]: item[1] for item in key_value_list}
-        return phage_wantings
+        return {item[0]: item[1] for item in key_value_list}
 
     def get_coords(self, now: tuple, action: str) -> tuple | None:
         """
@@ -272,15 +271,14 @@ class Map:
         for i in range(generations):
             if not i % self.when_make_kids:
                 self.lets_make_kids()  # processes multiplication of phages
-            phage_wants = self.what_they_want_from_me()  # iterating through map, asking creatures their desires:
+            phage_wants = self.what_do_they_want_from_me()  # iterating through map, asking creatures their desires:
             self.satisfy_desires(phage_wants)  # performing what they want
             all_states.append(deepcopy(self.map))  # saving map state
         return all_states
 
 
 if __name__ == "__main__":
-    start = time.perf_counter()
     board = Map(100)
-    board.generate_creatures(num_of_enemies=40, num_of_preys=100)
-    simulation = board.cycle(100)
-    give_vika = list(map(lambda state: give_to_vika(state), simulation))
+    board.generate_creatures(num_of_enemies=40, num_of_preys=80)
+    simulation = board.cycle(60)
+    # give_vika = list(map(lambda state: give_to_vika(state), simulation))
