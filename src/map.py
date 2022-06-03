@@ -240,7 +240,7 @@ class Map:
                 else:
                     self.make_phage_move(now=position, future=coords)
 
-    def lets_make_kids(self):
+    def lets_make_kids(self) -> None:
         """
         Function that processes multiplication of phages and add children to the map
         """
@@ -251,7 +251,8 @@ class Map:
                 self.process_death(dead.position)
             for kid in kids_phages:
                 radius = 1
-                while closest_possible := self.find_by_radius(obj_type=None, radius=1, position=kid.position) is None:
+                while (closest_possible := self.find_by_radius(obj_type=None.__class__, radius=1,
+                                                               position=kid.position)) is None:
                     radius += 1
                     if radius >= 5:
                         break
@@ -278,7 +279,7 @@ if __name__ == "__main__":
     board = Map(100)
     board.generate_creatures(num_of_enemies=40, num_of_preys=100)
     simulation = board.cycle(100)
-    give_vika = list(map(lambda state: Map.give_to_vika(state), simulation))
+    give_vika = list(map(lambda state: give_to_vika(state), simulation))
 
     # simulation = board.cycle(20)
     # list_of_chloro_phages, list_of_hunter_phages = Map.give_to_olli(simulation[-1])

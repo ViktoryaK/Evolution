@@ -6,17 +6,18 @@ Create pairs, return dead phages
 import random
 from phage import Phage, ChloroPhage, HunterPhage
 
+
 # TODO:
 
 
-def get_pair_genome(genom1, genom2, prob = 0.05):
+def get_pair_genome(genom1, genom2, prob=0.05):
     """
     get father's and mother's genoms, merge them and return child
     """
     child = []
     for i in range(len(genom1)):
-        child_genom = (genom1[i] + genom2[i]) // 2
-        child.append(child_genom)
+        child_genome = (genom1[i] + genom2[i]) // 2
+        child.append(child_genome)
     if random.uniform(0, 1) <= prob:
         minus = False
         rand_ind = random.randint(0, len(child) - 1)
@@ -36,19 +37,19 @@ def get_pair_genome(genom1, genom2, prob = 0.05):
         if change_better_part < 0.1:
             random_ind = random.randint(0, len(first_part) - 1)
             if first_part[random_ind] == "1":
-                first_part[random_ind] == "0"
+                first_part[random_ind] = "0"
             else:
                 first_part[random_ind] = "1"
         elif change_better_part < 0.7:
             random_ind = random.randint(0, len(second_part) - 1)
             if second_part[random_ind] == "1":
-                second_part[random_ind] == "0"
+                second_part[random_ind] = "0"
             else:
                 second_part[random_ind] = "1"
         elif change_better_part >= 0.7:
             random_ind = random.randint(0, len(third_part) - 1)
             if third_part[random_ind] == "1":
-                third_part[random_ind] == "0"
+                third_part[random_ind] = "0"
             else:
                 third_part[random_ind] = "1"
         binary_to_merge = first_part + second_part + third_part
@@ -58,9 +59,11 @@ def get_pair_genome(genom1, genom2, prob = 0.05):
         child[rand_ind] = joined_int
     return child
 
+
 def distance_satisfies(phage1: Phage, phage2: Phage):
     distance = abs(phage1.position[0] - phage2.position[0]) + abs(phage1.position[1] - phage2.position[1])
     return distance <= 10
+
 
 def create_pairs(list_of_phages: list) -> list[tuple]:
     """
@@ -84,6 +87,7 @@ def create_pairs(list_of_phages: list) -> list[tuple]:
         phages.remove(first)
         # dead_phages.append(first)
         help(phages)
+
     help(list_of_phages)
     return pairs, dead_phages
 
@@ -94,41 +98,27 @@ def start_reproducing(list_of_phages: list):
     return list of kids(full of objects), dead phages
     """
     result_of_reproduction = []
-    type_of_phage = ChloroPhage if isinstance(list_of_phages[0], ChloroPhage) == True else HunterPhage
+    type_of_phage = ChloroPhage if isinstance(list_of_phages[0], ChloroPhage) is True else HunterPhage
     pairs, dead_phages = create_pairs(list_of_phages)
     for pair in pairs:
-        list_of_children = get_childs(*pair, type_of_phage)
+        list_of_children = get_children(*pair, type_of_phage)
         for kid in list_of_children:
             result_of_reproduction.append(kid)
     return result_of_reproduction, dead_phages
 
 
-# def int_generator():
-#     '''
-#     help function to generate gens
-#     '''
-#     empty = []
-#     for _ in range(18):
-#         empty.append(random.randint(0, 200))
-#     return empty
-
-def get_childs(phage1: Phage, phage2:Phage, type_of_phage):
+def get_children(phage1: Phage, phage2: Phage, type_of_phage):
     """
     return list of children's objects
     """
-    genom1 = phage1.genome
-    genom2 = phage2.genome
+    genome_1 = phage1.genome
+    genome_2 = phage2.genome
     number_of_children = random.randint(1, 4)
     list_of_children = []
     parents_pos = [phage1.position, phage2.position]
     random.shuffle(parents_pos)
     for child in range(number_of_children):
-        new_phage = type_of_phage(get_pair_genome(genom1, genom2))
-        new_phage.position = parents_pos[child%2]
-        list_of_children.append(type_of_phage(get_pair_genome(genom1, genom2)))
+        new_phage = type_of_phage(get_pair_genome(genome_1, genome_2))
+        new_phage.position = parents_pos[child % 2]
+        list_of_children.append(new_phage)
     return list_of_children
-
-# genom1 = [15, 112, 3, 120, 176, 71, 137, 121, 62, 42, 197, 1, 60, 108, 155, 135, 160, 43]
-# genom2 = [20, 107, 91, 77, 153, 54, 153, 149, 104, 46, 180, 145, 89, 49, 107, 187, 14, 143]
-
-# print(get_childs(genom1, genom2))
