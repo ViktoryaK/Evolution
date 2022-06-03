@@ -23,6 +23,13 @@ from brain import *
 from kids_maker import *
 
 
+def give_to_vika(one_board: list[list]) -> list[list]:
+    """
+    Simplifies a map for showing it on a video
+    """
+    return [[repr(item) for item in one_board[i]] for i in range(len(one_board))]
+
+
 class Map:
     """
     Map class
@@ -87,13 +94,6 @@ class Map:
 
     def __repr__(self):
         return "\n".join([str([item for item in self.map[i]]) for i in range(self.size)])
-
-    @staticmethod
-    def give_to_vika(one_board: list[list]) -> list[list]:
-        """
-        Simplifies a map for showing it on a video
-        """
-        return [[repr(item) for item in one_board[i]] for i in range(len(one_board))]
 
     def give_to_olli(self) -> tuple[list, list]:
         """
@@ -275,7 +275,6 @@ class Map:
 
 
 if __name__ == "__main__":
-    start = time.perf_counter()
     board = Map(100)
     board.generate_creatures(num_of_enemies=40, num_of_preys=100)
     simulation = board.cycle(100)
