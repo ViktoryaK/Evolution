@@ -1,261 +1,134 @@
 """
-A module for a map of a simulation. Logic for maps updates.
-Processes each creature's move, checks if a move is valid.
-
-
-
------------------------------------------------------------
-         Designed by Mr. Korch on last day of spring
-                No rights reserved.
-              For commercial use only.
------------------------------------------------------------
-
-
-
+Helpful module to create a new generation
+Create pairs, return dead phages
 """
-from __future__ import annotations
 
-from copy import deepcopy
-from random import sample
-from phage import *
-from brain import *
-from kids_maker import start_reproducing
+import random
+from phage import Phage, ChloroPhage, HunterPhage
+
+# TODO:
 
 
-class Map:
+def get_pair_genome(genom1, genom2, prob = 0.05):
     """
-    Map class
-    Enter the length of side of a square
+    get father's and mother's genoms, merge them and return child
     """
-    # TODO: levels of photosynthesis
-    loss_for_move = 5
-    loss_for_stay = 2
-    one_move_gain = 5
-    kill_gain = 20
-
-    def __init__(self, size=100) -> None:
-        """
-        creating 2D array representation
-        """
-        self.size = size
-        # TODO: 2D Array maybe?
-        self.map = [[None for _ in range(self.size)] for _ in range(self.size)]
-
-    def __getitem__(self, position: tuple) -> None | Phage:
-        """
-        Returns an object by pos on a map
-        Easy access to the board
-        position - coords
-        """
-        return self.map[position[0]][position[1]]
-
-    def __setitem__(self, position: tuple, value: None | Phage) -> None:
-        """
-        Easy access to the changes of a board
-        position - coords
-        """
-        self.map[position[0]][position[1]] = value
-
-    def generate_creatures(self, num_of_enemies: int, num_of_preys: int) -> None:
-        """
-        Fills a map with organisms.
-        """
-        for position in self.get_random_positions(num_of_enemies):
-            self.set_org_on_map(organism=HunterPhage(create_random_genome()), coords=position)
-
-        for position in self.get_random_positions(num_of_preys):
-            self.set_org_on_map(organism=ChloroPhage(create_random_genome()), coords=position)
-
-    def set_org_on_map(self, organism: Phage, coords: tuple) -> None:
-        """
-        Sets a map with one 'organism'
-        :param organism: Creature
-        :param coords: tuple (y, x)
-        :return: None
-        """
-        self[coords] = organism
-        # self.map[coords[0]][coords[1]] = organism
-        organism.position = coords
-
-    def get_random_positions(self, number: int) -> list[tuple]:
-        """
-        Returns a list of random, not yet filled positions
-        """
-        free_squares = [(height, length) for height in range(self.size) for length in range(self.size) if
-                        self[height, length] is None]
-        return sample(free_squares, number)
-
-    def __repr__(self):
-        return "\n".join([str([item for item in self.map[i]]) for i in range(self.size)])
-
-    @staticmethod
-    def give_to_vika(one_board: list[list]) -> list[list]:
-        """
-        Simplifies a map for showing it on a video
-        """
-        return [[repr(item) for item in one_board[i]] for i in range(len(one_board))]
-
-    @staticmethod
-    def give_to_olli(one_board: list[list]) -> tuple[list, list]:
-        """
-        Returns two lists of phages of different types
-        Special for Olli with love
-        first - ChloroPhage, second - HunterPhage
-        """
-        chloro, hunter = [], []
-        for row in one_board:
-            for el in row:
-                if el is not None:
-                    chloro.append(el) if isinstance(el, ChloroPhage) else hunter.append(el)
-        return chloro, hunter
-
-    def get_nearest_strangers(self, position: tuple, stranger, distance=2) -> list[tuple]:
-        """
-        Returns a list of the closest strangers by number of steps to get to
-        position - position of a Phage
-        stranger - rival (opposite) class
-        distance - radius of searching
-        """
-        res = []
-        for height in range(2 * distance + 1):
-            for length in range(2 * distance + 1):
-                new_height, new_length = position[0] - distance + height, position[1] - distance + length
-                if 0 <= new_height < self.size and 0 <= new_length < self.size:
-                    square = self[new_height, new_length]
-                    if square is not None and isinstance(square, stranger):
-                        res.append((new_height, new_length))
-        return res
-
-    @staticmethod
-    def choose_closest_stranger(pos: tuple, strangers: list[tuple]) -> tuple:
-        """
-        Returns the closest stranger to Phage's position - pos
-        Strangers positions - 'strangers'
-        """
-        return list(sorted(strangers, key=lambda item: abs(pos[0] - item[0]) + abs(pos[1] - item[1])))[
-            0] if strangers else None
-
-    def what_they_want_from_me(self) -> dict:
-        """
-        Iterating through map, asking creatures their desires
-        """
-        phage_wantings = dict()
-        for hey, row in enumerate(self.map):
-            for length, elem in enumerate(row):
-                if elem is not None:
-                    strangers = self.get_nearest_strangers(position=(hey, length),
-                                                           distance=5,
-                                                           stranger=ChloroPhage if isinstance(elem, HunterPhage)
-                                                           else HunterPhage)
-                    if strangers:
-                        position_of_stranger = self.choose_closest_stranger((hey, length), strangers)
-                        dx, dy = hey - position_of_stranger[0], length - position_of_stranger[1]
-                    else:
-                        dx, dy = None, None
-                    phage_wantings[(hey, length)] = elem.get_next_move(dx, dy)
-        return phage_wantings
-
-    def get_coords(self, now: tuple, action: str) -> tuple | None:
-        """
-        Gets coords of new move, where action - "Up", "Down", "Left", "Right"
-        """
-        if action == "Up":
-            hey, length = now[0] - 1, now[1]
-        elif action == "Down":
-            hey, length = now[0] + 1, now[1]
-        elif action == "Left":
-            hey, length = now[0], now[1] - 1
-        elif action == "Right":
-            hey, length = now[0], now[1] + 1
+    child = []
+    for i in range(len(genom1)):
+        child_genom = (genom1[i] + genom2[i]) // 2
+        child.append(child_genom)
+    if random.uniform(0, 1) <= prob:
+        minus = False
+        rand_ind = random.randint(0, len(child) - 1)
+        random_int_to_mutation = child[rand_ind]
+        if int(random_int_to_mutation) < 0:
+            int_to_change = bin(random_int_to_mutation)[3:]
+            minus = True
         else:
-            return None
+            int_to_change = bin(random_int_to_mutation)[2:]
+        list_of_bin_int = [elem for elem in int_to_change]
+        slicer = len(list_of_bin_int) // 3
+        first_part = list_of_bin_int[:slicer]
+        slicer2 = len(list_of_bin_int) - slicer
+        second_part = list_of_bin_int[slicer:slicer2]
+        third_part = list_of_bin_int[slicer2:]
+        change_better_part = random.uniform(0, 1)
+        if change_better_part < 0.1:
+            random_ind = random.randint(0, len(first_part) - 1)
+            if first_part[random_ind] == "1":
+                first_part[random_ind] == "0"
+            else:
+                first_part[random_ind] = "1"
+        elif change_better_part < 0.7:
+            random_ind = random.randint(0, len(second_part) - 1)
+            if second_part[random_ind] == "1":
+                second_part[random_ind] == "0"
+            else:
+                second_part[random_ind] = "1"
+        elif change_better_part >= 0.7:
+            random_ind = random.randint(0, len(third_part) - 1)
+            if third_part[random_ind] == "1":
+                third_part[random_ind] == "0"
+            else:
+                third_part[random_ind] = "1"
+        binary_to_merge = first_part + second_part + third_part
+        joined_int = int("".join(binary_to_merge), 2)
+        if minus:
+            joined_int = int("-" + str(joined_int))
+        child[rand_ind] = joined_int
+    return child
 
-        return (hey, length) if 0 <= hey < self.size and 0 <= length < self.size else (now[0], now[1])
+def distance_satisfies(phage1: Phage, phage2: Phage):
+    distance = abs(phage1.position[0] - phage2.position[0]) + abs(phage1.position[1] - phage2.position[1])
+    return distance <= 10
 
-    def make_phage_move(self, now: tuple, future: tuple) -> None:
-        """
-        Makes a move on a board, frees 'new' square, occupies 'future' one
-        """
-        phage = self[now]
-        if self[future] is None:
-            phage.energy -= self.loss_for_move
-            self.set_org_on_map(phage, future)
-            self[now] = None
-        else:
-            phage.energy -= self.loss_for_stay
+def create_pairs(list_of_phages: list) -> list[tuple]:
+    """
+    Creates list of tuples - two parents
+    """
+    pairs = []
+    dead_phages = []
 
-    def kill_if_possible(self, position: tuple, phage: Phage) -> None:
-        """
-        For HunterPhage, kills a ChloroPhage if possible,
-        otherwise stays and loses energy
-        """
-        radius = 1
-        for height in range(2 * radius + 1):
-            for length in range(2 * radius + 1):
-                new_height, new_length = position[0] - radius + height, position[1] - radius + length
-                if 0 <= new_height < self.size and 0 <= new_length < self.size:
-                    obj = self[new_height, new_length]
-                    if isinstance(obj, ChloroPhage):
-                        self[new_height, new_length] = None
-                        phage.energy += self.kill_gain
-                        return
-
-        phage.energy -= self.loss_for_stay
-
-    def give_energy(self, position: tuple) -> None:
-        """
-        Gives the energy to the phage
-        """
-        phage = self[position]
-        if isinstance(phage, ChloroPhage):
-            phage.energy += self.one_move_gain
-        elif isinstance(phage, HunterPhage):
-            self.kill_if_possible(position=position, phage=phage)
-        else:
-            print("DUUUUUUUDEEE YOU'VE FUCKED UP :(")
-            exit(1)
-
-    def process_death(self, position: tuple) -> None:
-        """
-        Processes death of a phage
-        """
-        self[position] = None
-
-    def satisfy_desires(self, phage_wants: dict) -> None:
-        """
-        Gives phages exactly what they want
-        """
-        for position, action in phage_wants.items():
-            if self[position] is not None:
-                action = action.name
-                coords = self.get_coords(position, action)
-                if coords is None:
-                    self.give_energy(position) if action == "Energy" else self.process_death(position)
-                else:
-                    self.make_phage_move(now=position, future=coords)
-
-    def cycle(self, generations: int) -> list[list[list]]:
-        """
-        Runs a simulation 'generations' times
-        Puts each state into a list to be processed later
-        """
-        all_states = []
-        for i in range(generations):
-            phage_wants = self.what_they_want_from_me()  # iterating through map, asking creatures their desires:
-            # TODO: shuffle a dictionary for more realistic simulation
-            self.satisfy_desires(phage_wants)  # performing what they want
-            all_states.append(deepcopy(self.map))  # saving map state
-        return all_states
+    def help(phages: list[Phage]):
+        if not phages:
+            return pairs
+        first = phages[0]
+        for phage in phages[1:]:
+            if distance_satisfies(first, phage):
+                pairs.append((first, phage))
+                for elem in (first, phage):
+                    phages.remove(elem)
+                    dead_phages.append(elem)
+                help(phages)
+                return
+        phages.remove(first)
+        # dead_phages.append(first)
+        help(phages)
+    help(list_of_phages)
+    return pairs, dead_phages
 
 
-if __name__ == "__main__":
-    board = Map(100)
-    board.generate_creatures(num_of_enemies=40, num_of_preys=100)
-    simulation = board.cycle(30)
-    give_vika = list(map(lambda state: Map.give_to_vika(state), simulation))
-    phages = Map.give_to_olli(simulation[-1])
+def start_reproducing(list_of_phages: list):
+    """
+    create pairs, make kids
+    return list of kids(full of objects), dead phages
+    """
+    result_of_reproduction = []
+    type_of_phage = ChloroPhage if isinstance(list_of_phages[0], ChloroPhage) == True else HunterPhage
+    pairs, dead_phages = create_pairs(list_of_phages)
+    for pair in pairs:
+        list_of_children = get_childs(*pair, type_of_phage)
+        for kid in list_of_children:
+            result_of_reproduction.append(kid)
+    return result_of_reproduction, dead_phages
 
-    print(f"greens: {len(phages[0])}")
-    print(f"reds: {len(phages[1])}")
-    chloro_kids, chloro_dead = start_reproducing(phages[0])
-    hunter_kids, hunter_dead = start_reproducing(phages[1])
+
+# def int_generator():
+#     '''
+#     help function to generate gens
+#     '''
+#     empty = []
+#     for _ in range(18):
+#         empty.append(random.randint(0, 200))
+#     return empty
+
+def get_childs(phage1: Phage, phage2:Phage, type_of_phage):
+    """
+    return list of children's objects
+    """
+    genom1 = phage1.genome
+    genom2 = phage2.genome
+    number_of_children = random.randint(1, 4)
+    list_of_children = []
+    parents_pos = [phage1.position, phage2.position]
+    random.shuffle(parents_pos)
+    for child in range(number_of_children):
+        new_phage = type_of_phage(get_pair_genome(genom1, genom2))
+        new_phage.position = parents_pos[child%2]
+        list_of_children.append(type_of_phage(get_pair_genome(genom1, genom2)))
+    return list_of_children
+
+# genom1 = [15, 112, 3, 120, 176, 71, 137, 121, 62, 42, 197, 1, 60, 108, 155, 135, 160, 43]
+# genom2 = [20, 107, 91, 77, 153, 54, 153, 149, 104, 46, 180, 145, 89, 49, 107, 187, 14, 143]
+
+# print(get_childs(genom1, genom2))
