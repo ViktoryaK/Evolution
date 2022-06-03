@@ -1,15 +1,17 @@
 """
-Includes three classes, namely Phage, ChloralPhage and SlayerPhage.
-The last two are inherited from the first one.
-The main difference between ChloralPhage and SlayerPhage:
-    ChloralPhage consumes energy from the sun, while
-    SlayerPhage gets it by killing ChloralPhage.
 ---------------------------------------------
 #    Developed by Mr. DamnChuk 27.05.2022   #
 #           All rights reserved.            #
 #         For educational use only.         #
 ---------------------------------------------
+Includes three classes, namely Phage, ChloralPhage and SlayerPhage.
+The last two are inherited from the first one.
+The main difference between ChloralPhage and SlayerPhage:
+    ChloralPhage consumes energy from the sun, while
+    SlayerPhage gets it by killing ChloralPhage.
 """
+import random
+
 from brain import Brain, create_random_genome
 
 MAX_ENERGY = 100
@@ -76,7 +78,7 @@ class HunterPhage(Phage):
         super().__init__(genome)
 
     def get_next_move(self, dx=None, dy=None):
-        return super().get_next_move(None, None) if dx is None or dy is None\
+        return super().get_next_move(None, None) if dx is None or dy is None \
             else super().get_next_move(-dx, -dy)
 
     def __repr__(self):
@@ -84,12 +86,18 @@ class HunterPhage(Phage):
 
 
 def test_phage():
-    genome = create_random_genome()
-    print("Genome:", genome)
-    phage = ChloroPhage(genome)
-    phage.position = (50, 50)
-    print(phage.get_next_move(1, 2))
+    res = []
+    for _ in range(0, 100):
+        genome = create_random_genome()
+        print("Genome:", genome)
+        phage = ChloroPhage(genome)
+        phage.energy = random.randint(0, 100)
+        phage.position = (random.randint(0, 100), random.randint(0, 100))
+        res.append(phage.get_next_move(random.randint(-2, 2), random.randint(-2, 2)))
+    return res
 
 
 if __name__ == '__main__':
-    test_phage()
+    res = test_phage()
+    for string in ["Left", "Right", "Up", "Down"]:
+        print(string, len(list(filter(lambda x: x.name == string, res))))
