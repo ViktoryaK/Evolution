@@ -40,7 +40,8 @@ class Map:
     loss_for_stay = 2
     one_move_gain = 5
     kill_gain = 20
-    when_make_kids = 20
+    when_make_kids = 10
+    photosynthesis = 10
 
     def __init__(self, size=100) -> None:
         """
@@ -214,7 +215,7 @@ class Map:
         """
         phage = self[position]
         if isinstance(phage, ChloroPhage):
-            phage.energy += self.one_move_gain
+            phage.energy += self.one_move_gain * phage.position[0] // self.size
         elif isinstance(phage, HunterPhage):
             self.kill_if_possible(position=position, phage=phage)
         else:
@@ -276,10 +277,12 @@ class Map:
 
 
 if __name__ == "__main__":
+    start = time.perf_counter()
     board = Map(100)
     board.generate_creatures(num_of_enemies=40, num_of_preys=100)
     simulation = board.cycle(100)
     give_vika = list(map(lambda state: give_to_vika(state), simulation))
+    print(time.perf_counter() - start)
 
     # simulation = board.cycle(20)
     # list_of_chloro_phages, list_of_hunter_phages = Map.give_to_olli(simulation[-1])
