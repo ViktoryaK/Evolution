@@ -41,7 +41,6 @@ class Map:
     one_move_gain = 5
     kill_gain = 20
     when_make_kids = 10
-    photosynthesis = 10
 
     def __init__(self, size=100) -> None:
         """
@@ -186,7 +185,7 @@ class Map:
 
     def find_by_radius(self, obj_type, radius: int, position: tuple) -> tuple | None:
         """
-        Finds a first object of given type on a map
+        Finds the first occurrence of object of given type on a map
         with some radius at given position
         """
         for height in range(2 * radius + 1):
