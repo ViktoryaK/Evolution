@@ -18,7 +18,8 @@ def get_pair_genome(genom1, genom2, prob=0.05):
     for i in range(len(genom1)):
         child_genome = (genom1[i] + genom2[i]) // 2
         child.append(child_genome)
-    if random.uniform(0, 1) <= prob:
+    strange = random.uniform(0, 1)
+    if strange <= prob:
         minus = False
         rand_ind = random.randint(0, len(child) - 1)
         random_int_to_mutation = child[rand_ind]
@@ -28,35 +29,31 @@ def get_pair_genome(genom1, genom2, prob=0.05):
         else:
             int_to_change = bin(random_int_to_mutation)[2:]
         list_of_bin_int = [elem for elem in int_to_change]
-        slicer = len(list_of_bin_int) // 3
-        first_part = list_of_bin_int[:slicer]
-        slicer2 = len(list_of_bin_int) - slicer
-        second_part = list_of_bin_int[slicer:slicer2]
-        third_part = list_of_bin_int[slicer2:]
-        change_better_part = random.uniform(0, 1)
-        if change_better_part < 0.1:
-            random_ind = random.randint(0, len(first_part) - 1)
-            if first_part[random_ind] == "1":
-                first_part[random_ind] = "0"
-            else:
-                first_part[random_ind] = "1"
-        elif change_better_part < 0.7:
-            random_ind = random.randint(0, len(second_part) - 1)
-            if second_part[random_ind] == "1":
-                second_part[random_ind] = "0"
-            else:
-                second_part[random_ind] = "1"
-        elif change_better_part >= 0.7:
-            random_ind = random.randint(0, len(third_part) - 1)
-            if third_part[random_ind] == "1":
-                third_part[random_ind] = "0"
-            else:
-                third_part[random_ind] = "1"
-        binary_to_merge = first_part + second_part + third_part
-        joined_int = int("".join(binary_to_merge), 2)
-        if minus:
-            joined_int = int("-" + str(joined_int))
-        child[rand_ind] = joined_int
+        if len(list_of_bin_int) == 1:
+            child[rand_ind] = 1 if list_of_bin_int[0] == "0" else 0
+        else:
+            slicer = len(list_of_bin_int) // 2
+            first_part = list_of_bin_int[:slicer]
+            second_part = list_of_bin_int[slicer:]
+            change_better_part = random.uniform(0, 1)
+            if change_better_part < 0.2:
+                random_ind = random.randint(0, len(first_part) - 1)
+                if first_part[random_ind] == "1":
+                    first_part[random_ind] = "0"
+                else:
+                    first_part[random_ind] = "1"
+            elif change_better_part >= 0.2:
+                random_ind = random.randint(0, len(second_part) - 1)
+                if second_part[random_ind] == "1":
+                    second_part[random_ind] = "0"
+                else:
+                    second_part[random_ind] = "1"
+
+            binary_to_merge = first_part + second_part
+            joined_int = int("".join(binary_to_merge), 2)
+            if minus:
+                joined_int = int("-" + str(joined_int))
+            child[rand_ind] = joined_int
     return child
 
 
