@@ -36,9 +36,9 @@ class State:
             if conditions[_] == 'ignore' or input_list[_] is None:
                 continue
             # Evaluating whether condition was satisfied by input.
-            if eval(str(input_list[_]) + conditions[_] + str(weights[_])) is False:
-                return False
-        return True
+            if eval(str(input_list[_]) + conditions[_] + str(weights[_])) is True:
+                return True
+        return False
 
     def __repr__(self):
         return "State(" + self.name + ")"
@@ -95,6 +95,7 @@ class Brain:
         # and gain energy when we are alive.
         if genome[0] <= 0 or genome[1] <= 0:
             return False
+        # TODO: add asserts for dx and dy in [1, 2, -1, -2]
         return True
 
     @staticmethod
@@ -109,14 +110,14 @@ class Brain:
             if State.satisfies(input_list, conditions, weights):
                 next_states.append(next_state)
         # Removing used inputs
-        print("Possible next states:", next_states)
-        print("All state connections:", state.connections)
+        # print("Possible next states:", next_states)
+        # print("All state connections:", state.connections)
         input_list[:] = input_list[len(state.connections[1][1]):]
-        print(f"Input now: {input_list}")
+        # print(f"Input now: {input_list}")
         if not next_states:
             conn = random.choice(state.connections)
             return conn[0]
-        return next_states[0]
+        return next_states[0] if next_states[0].name == 'Death' else random.choice(next_states)
 
     def get_final_state(self, input_list: list):
         """
@@ -125,26 +126,22 @@ class Brain:
         input_list contains 5 integers: E, x, y, dx, dy.
         dx = x - x* and dy = y - y*.
         """
-        print(f"Input list: {input_list}")
+        # print(f"Input list: {input_list}")
         current_state = self.input_state
         while not current_state.is_terminal:
             current_state = self.forward(current_state, input_list)
         return current_state
 
 
-def test_brain():
-    genome = [random.randint(-50, 100) for _ in range(18)]
-    input_list = [random.randint(-50, 100) for _ in range(5)]
-    print("Genome:", genome)
-    print("Input:", input_list)
-    b = Brain(genome)
-    print("Final state:", b.get_final_state(input_list))
-
-
 def create_random_genome():
+    """
+    Creates random genome that is correct by the definition.
+    """
     while True:
         try:
-            genome = [random.randint(-100, 100) for _ in range(18)]
+            genome = [random.randint(0, 100) for _ in range(18)]
+            for gen in 4, 5, 8, 9, 12, 13, 16, 17:
+                genome[gen] = random.choice([-2, -1, 1, 2])
             assert Brain.is_correct_genome(genome)
             return genome
         except AssertionError:
@@ -152,4 +149,4 @@ def create_random_genome():
 
 
 if __name__ == '__main__':
-    test_brain()
+    print(create_random_genome())
