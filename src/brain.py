@@ -136,8 +136,8 @@ class Brain:
         current_state = self.input_state
         while not current_state.is_terminal:
             current_state = self.forward(current_state, input_list, self._is_hunter)
-        if self._is_hunter and current_state.name == 'Energy':
-            print("Hunter has eaten a chlorophage!")
+        # if self._is_hunter and current_state.name == 'Energy':
+            # print("Hunter has eaten a chlorophage!")
         return current_state
 
 
