@@ -34,17 +34,18 @@ class Phage:
 
     @genome.setter
     def genome(self, new_genome: list):
+        self._genome = new_genome
         self._brain = Brain(new_genome)
 
     @property
     def position(self):
-        return self._pos
+        return self._pos[1], self._pos[0]
 
     @position.setter
     def position(self, tup: tuple):
-        self._pos = tup
+        self._pos = tup[1], tup[0]
 
-    def get_next_move(self, dx=None, dy=None):
+    def get_next_move(self, dy=None, dx=None):
         """
         Returns the State that represents next move of the phage.
         Must be handled outside the module.
@@ -61,8 +62,8 @@ class ChloroPhage(Phage):
     def __init__(self, genome):
         super().__init__(genome)
 
-    def get_next_move(self, dx=None, dy=None):
-        return super().get_next_move(dx, dy)
+    def get_next_move(self, dy=None, dx=None):
+        return super().get_next_move(dy, dx)
 
     def __repr__(self):
         return "green"
@@ -77,9 +78,9 @@ class HunterPhage(Phage):
     def __init__(self, genome):
         super().__init__(genome)
 
-    def get_next_move(self, dx=None, dy=None):
+    def get_next_move(self, dy=None, dx=None):
         return super().get_next_move(None, None) if dx is None or dy is None \
-            else super().get_next_move(-dx, -dy)
+            else super().get_next_move(-dy, -dx)
 
     def __repr__(self):
         return "red"
