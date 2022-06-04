@@ -49,13 +49,14 @@ class Brain:
     Brain class.
     """
 
-    def __init__(self, genome: list):
+    def __init__(self, genome: list, is_hunter=False):
         try:
             assert self.is_correct_genome(genome)
         except AssertionError:
             print("INCORRECT GENOME - YOU KILLED A PHAGE")
             raise ValueError
         self.input_state = None
+        self._is_hunter = is_hunter
         self._build_brain(genome)
 
     def _build_brain(self, genome: list):
@@ -74,11 +75,11 @@ class Brain:
         right_state = State("Right", True)
         up_state = State("Up", True)
         down_state = State("Down", True)
-        move_state.add_connection(left_state, ['>=', 'ignore', '<=', 'ignore'],
+        move_state.add_connection(left_state, ['ignore', 'ignore', '<=', 'ignore'],
                                   [genome[2], genome[3], genome[4], genome[5]])
-        move_state.add_connection(right_state, ['<=', 'ignore', '>=', 'ignore'],
+        move_state.add_connection(right_state, ['ignore', 'ignore', '>=', 'ignore'],
                                   [genome[6], genome[7], genome[8], genome[9]])
-        move_state.add_connection(up_state, ['ignore', '>=', 'ignore', '<='],
+        move_state.add_connection(up_state, ['ignore', 'ignore', 'ignore', 'ignore'],
                                   [genome[10], genome[11], genome[12], genome[13]])
         move_state.add_connection(down_state, ['ignore', '<=', 'ignore', '>='],
                                   [genome[14], genome[15], genome[16], genome[17]])
@@ -99,11 +100,16 @@ class Brain:
         return True
 
     @staticmethod
-    def forward(state: State, input_list: list):
+    def forward(state: State, input_list: list, is_hunter=False):
         """
         Moves to the new state due to input and weights on edges.
         Performs only one step.
         """
+        # If hunter can't consume energy, but can move or, die, it should
+        if is_hunter and state.name == 'Input' and input_list[-1] is None and input_list[-2] is None:
+            for st in state.connections:
+                if st[0].name == 'Move':
+                    return st[0]
         # Receiving possible next states to go
         next_states = []
         for next_state, conditions, weights in state.connections:
@@ -129,7 +135,9 @@ class Brain:
         # print(f"Input list: {input_list}")
         current_state = self.input_state
         while not current_state.is_terminal:
-            current_state = self.forward(current_state, input_list)
+            current_state = self.forward(current_state, input_list, self._is_hunter)
+        if self._is_hunter and current_state.name == 'Energy':
+            print("Hunter has eaten a chlorophage!")
         return current_state
 
 
@@ -141,7 +149,7 @@ def create_random_genome():
         try:
             genome = [random.randint(0, 100) for _ in range(18)]
             for gen in 4, 5, 8, 9, 12, 13, 16, 17:
-                genome[gen] = random.choice([-2, -1, 1, 2])
+                genome[gen] = random.choice([-3, -2, -1, 1, 2, 3])
             assert Brain.is_correct_genome(genome)
             return genome
         except AssertionError:
