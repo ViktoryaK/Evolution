@@ -74,13 +74,13 @@ class Brain:
         right_state = State("Right", True)
         up_state = State("Up", True)
         down_state = State("Down", True)
-        move_state.add_connection(left_state, ['<=', 'ignore', '<=', 'ignore'],
+        move_state.add_connection(left_state, ['>=', 'ignore', '<=', 'ignore'],
                                   [genome[2], genome[3], genome[4], genome[5]])
-        move_state.add_connection(right_state, ['>=', 'ignore', '>=', 'ignore'],
+        move_state.add_connection(right_state, ['<=', 'ignore', '>=', 'ignore'],
                                   [genome[6], genome[7], genome[8], genome[9]])
-        move_state.add_connection(up_state, ['ignore', '<=', 'ignore', '<='],
+        move_state.add_connection(up_state, ['ignore', '>=', 'ignore', '<='],
                                   [genome[10], genome[11], genome[12], genome[13]])
-        move_state.add_connection(down_state, ['ignore', '>=', 'ignore', '>='],
+        move_state.add_connection(down_state, ['ignore', '<=', 'ignore', '>='],
                                   [genome[14], genome[15], genome[16], genome[17]])
 
     @staticmethod
