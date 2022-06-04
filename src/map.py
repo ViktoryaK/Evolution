@@ -15,14 +15,13 @@ Processes each creature's move, checks if a move is valid.
 """
 from __future__ import annotations
 
-import random
-import sys
 import time
 from copy import deepcopy
 from random import sample
 from phage import *
 from brain import *
 from kids_maker import *
+from transform_to_file import *
 
 
 def give_to_vika(one_board: list[list]) -> list[list]:
@@ -273,7 +272,20 @@ class Map:
             phage_wants = self.what_do_they_want_from_me()  # iterating through map, asking creatures their desires:
             self.satisfy_desires(phage_wants)  # performing what they want
             all_states.append(deepcopy(self.map))  # saving map state
+        write_in_csv_file([self[position] for position in self.phage_positions])  # writes phages to the file
         return all_states
+
+    @staticmethod
+    def create_map_from_file(path: str = 'phages.csv', size: int = 100):
+        """
+        Creates a new map object fulfilled with phages
+        that were saved previously in the file
+        """
+        phages_info = read_csv_file(path)
+        new_map = Map(size)
+        for genome, position in phages_info:
+            new_map.set_org_on_map(Phage(genome), position)
+        return new_map
 
 
 if __name__ == "__main__":
