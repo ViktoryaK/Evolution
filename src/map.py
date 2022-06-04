@@ -92,7 +92,7 @@ class Map:
                         self[height, length] is None]
         return sample(free_squares, number)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "\n".join([str([item for item in self.map[i]]) for i in range(self.size)])
 
     def give_to_olli(self) -> tuple[list, list]:
@@ -217,7 +217,7 @@ class Map:
         """
         phage = self[position]
         if isinstance(phage, ChloroPhage):
-            phage.energy += self.one_move_gain * phage.position[0] // self.size
+            phage.energy += self.one_move_gain * (self.size - phage.position[0]) // self.size
         elif isinstance(phage, HunterPhage):
             self.kill_if_possible(position=position, phage=phage)
         else:
@@ -278,7 +278,9 @@ class Map:
 
 
 if __name__ == "__main__":
+    start = time.perf_counter()
     board = Map(100)
-    board.generate_creatures(num_of_enemies=40, num_of_preys=80)
-    simulation = board.cycle(60)
+    board.generate_creatures(num_of_enemies=50, num_of_preys=100)
+    simulation = board.cycle(100)
+    print(time.perf_counter() - start)
     # give_vika = list(map(lambda state: give_to_vika(state), simulation))
