@@ -25,5 +25,5 @@ def magic(give_vika):
                         abs_y = abs(y - len(board)) - 1
                         plt.scatter(x, abs_y, c=c[0], s=5, marker=(7, 2, 45))
         camera.snap()
-    anim = camera.animate(blit=True, interval=200)
-    anim.save('my.mp4')
+    anim = camera.animate(blit=True, interval=400)
+    anim.save('try.mp4')
