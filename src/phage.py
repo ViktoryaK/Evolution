@@ -22,11 +22,11 @@ class Phage:
     Main Phage class.
     """
 
-    def __init__(self, genome):
+    def __init__(self, genome, is_hunter=False):
         self.energy = MAX_ENERGY
         self._pos = (None, None)
         self._genome = genome
-        self._brain = Brain(genome)
+        self._brain = Brain(genome, is_hunter)
 
     @property
     def genome(self):
@@ -76,7 +76,7 @@ class HunterPhage(Phage):
     """
 
     def __init__(self, genome):
-        super().__init__(genome)
+        super().__init__(genome, True)
 
     def get_next_move(self, dy=None, dx=None):
         return super().get_next_move(None, None) if dx is None or dy is None \
