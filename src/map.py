@@ -16,13 +16,14 @@ Processes each creature's move, checks if a move is valid.
 from __future__ import annotations
 
 import random
+import sys
 import time
 from copy import deepcopy
 from random import sample
 from phage import *
 from brain import *
 from kids_maker import *
-from visualisation import magic
+
 
 def give_to_vika(one_board: list[list]) -> list[list]:
     """
@@ -115,15 +116,15 @@ class Map:
         stranger - rival (opposite) class
         distance - radius of searching
         """
-        res = []
+        result = []
         for height in range(2 * distance + 1):
             for length in range(2 * distance + 1):
                 new_height, new_length = position[0] - distance + height, position[1] - distance + length
                 if 0 <= new_height < self.size and 0 <= new_length < self.size:
                     square = self[new_height, new_length]
                     if square is not None and isinstance(square, stranger):
-                        res.append((new_height, new_length))
-        return res
+                        result.append((new_height, new_length))
+        return result
 
     @staticmethod
     def choose_closest_stranger(pos: tuple, strangers: list[tuple]) -> tuple:
@@ -252,15 +253,8 @@ class Map:
             kids_phages, dead_phages = start_reproducing(similar_phages)
             for dead in dead_phages:
                 self.process_death(dead.position)
-            for kid in kids_phages:
-                radius = 1
-                while (closest_possible := self.find_by_radius(obj_type=None.__class__, radius=1,
-                                                               position=kid.position)) is None:
-                    radius += 1
-                    if radius >= 5:
-                        break
-                else:
-                    self.set_org_on_map(kid, closest_possible)
+            for kid, position in zip(kids_phages, self.get_random_positions(len(kids_phages))):
+                self.set_org_on_map(kid, position)
 
     def cycle(self, generations: int) -> list[list[list]]:
         """
@@ -279,9 +273,8 @@ class Map:
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    board = Map(20)
-    board.generate_creatures(num_of_enemies=2, num_of_preys=2)
+    board = Map(100)
+    board.generate_creatures(num_of_enemies=50, num_of_preys=100)
     simulation = board.cycle(100)
-    give_vika = list(map(lambda state: give_to_vika(state), simulation))
-    magic(give_vika)
     print(time.perf_counter() - start)
+    # give_vika = list(map(lambda state: give_to_vika(state), simulation))
