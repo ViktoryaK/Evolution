@@ -41,7 +41,7 @@ class Map:
     loss_for_stay = 2
     one_move_gain = 5
     kill_gain = 20
-    when_make_kids = 10
+    when_make_kids = 20
 
     def __init__(self, size=100) -> None:
         """
@@ -93,7 +93,11 @@ class Map:
         """
         free_squares = [(height, length) for height in range(self.size) for length in range(self.size) if
                         self[height, length] is None]
-        return sample(free_squares, number)
+        try:
+            return sample(free_squares, number)
+        except ValueError:
+            random.shuffle(free_squares)
+            return free_squares
 
     def __repr__(self) -> str:
         return "\n".join([str([item for item in self.map[i]]) for i in range(self.size)])
@@ -275,7 +279,6 @@ class Map:
 if __name__ == "__main__":
     start = time.perf_counter()
     board = Map(100)
-    board.generate_creatures(num_of_enemies=40, num_of_preys=100)
+    board.generate_creatures(num_of_enemies=80, num_of_preys=120)
     simulation = board.cycle(100)
     print(time.perf_counter() - start)
-    # give_vika = list(map(lambda state: give_to_vika(state), simulation))
