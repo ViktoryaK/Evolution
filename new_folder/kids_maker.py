@@ -141,3 +141,4 @@ def get_children(phage1: Phage, phage2: Phage, type_of_phage, map_size):
         new_phage.position = (random.randint(0, map_size), random.randint(0, map_size))
         list_of_children.append(new_phage)
     return list_of_children
+
