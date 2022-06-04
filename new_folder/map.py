@@ -279,8 +279,8 @@ class Map:
 
 if __name__ == "__main__":
     start = time.perf_counter()
-    board = Map(20)
-    board.generate_creatures(num_of_enemies=2, num_of_preys=2)
+    board = Map(100)
+    board.generate_creatures(num_of_enemies=20, num_of_preys=70)
     simulation = board.cycle(100)
     give_vika = list(map(lambda state: give_to_vika(state), simulation))
     magic(give_vika)
