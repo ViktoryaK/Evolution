@@ -5,7 +5,8 @@ Create pairs, return dead phages
 
 import random
 from phage import Phage, ChloroPhage, HunterPhage
-
+import sys
+sys.setrecursionlimit(10**6)
 
 # TODO:
 
