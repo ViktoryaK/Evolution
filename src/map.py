@@ -209,7 +209,7 @@ class Map:
         For HunterPhage, kills a ChloroPhage if possible,
         otherwise stays and loses energy
         """
-        chloro_pos = self.find_by_radius(obj_type=ChloroPhage, radius=1, position=position)
+        chloro_pos = self.find_by_radius(obj_type=ChloroPhage, radius=2, position=position)
         if chloro_pos:
             self.process_death(chloro_pos)
             phage.energy += self.kill_gain
@@ -279,6 +279,6 @@ class Map:
 if __name__ == "__main__":
     start = time.perf_counter()
     board = Map(100)
-    board.generate_creatures(num_of_enemies=80, num_of_preys=120)
+    board.generate_creatures(num_of_enemies=60, num_of_preys=120)
     simulation = board.cycle(100)
     print(time.perf_counter() - start)
