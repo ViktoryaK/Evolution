@@ -97,6 +97,8 @@ def start_reproducing(list_of_phages: list):
     create pairs, make kids
     return list of kids(full of objects), dead phages
     """
+    if len(list_of_phages) == 0:
+        return [], []
     result_of_reproduction = []
     type_of_phage = ChloroPhage if isinstance(list_of_phages[0], ChloroPhage) is True else HunterPhage
     pairs, dead_phages = create_pairs(list_of_phages)
