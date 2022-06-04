@@ -49,6 +49,7 @@ class Map:
         """
         self.size = size
         self.map = [[None for _ in range(self.size)] for _ in range(self.size)]
+        self.phage_positions = []
 
     def __getitem__(self, position: tuple) -> None | Phage:
         """
@@ -84,6 +85,7 @@ class Map:
         """
         self[coords] = organism
         organism.position = coords
+        self.phage_positions.append(coords)
 
     def get_random_positions(self, number: int) -> list[tuple]:
         """
@@ -103,10 +105,9 @@ class Map:
         first - ChloroPhage, second - HunterPhage
         """
         chloro, hunter = [], []
-        for row in self.map:
-            for el in row:
-                if el is not None:
-                    chloro.append(el) if isinstance(el, ChloroPhage) else hunter.append(el)
+        for pos in self.phage_positions:
+            obj = self[pos]
+            chloro.append(obj) if isinstance(obj, ChloroPhage) else hunter.append(obj)
         return chloro, hunter
 
     def get_nearest_strangers(self, position: tuple, stranger, distance=2) -> list[tuple]:
@@ -140,19 +141,18 @@ class Map:
         Iterating through map, asking creatures their desires
         """
         phage_wantings = dict()
-        for hey, row in enumerate(self.map):
-            for length, elem in enumerate(row):
-                if elem is not None:
-                    strangers = self.get_nearest_strangers(position=(hey, length),
-                                                           distance=5,
-                                                           stranger=ChloroPhage if isinstance(elem, HunterPhage)
-                                                           else HunterPhage)
-                    if strangers:
-                        position_of_stranger = self.choose_closest_stranger((hey, length), strangers)
-                        dy, dx = hey - position_of_stranger[0], length - position_of_stranger[1]
-                    else:
-                        dy, dx = None, None
-                    phage_wantings[(hey, length)] = elem.get_next_move(dy, dx)
+        for position in self.phage_positions:
+            elem = self[position]
+            strangers = self.get_nearest_strangers(position=position,
+                                                   distance=5,
+                                                   stranger=ChloroPhage if isinstance(elem, HunterPhage)
+                                                   else HunterPhage)
+            if strangers:
+                position_of_stranger = self.choose_closest_stranger(position, strangers)
+                dy, dx = position[0] - position_of_stranger[0], position[1] - position_of_stranger[1]
+            else:
+                dy, dx = None, None
+            phage_wantings[position] = elem.get_next_move(dy, dx)
 
         key_value_list = [(key, value) for key, value in phage_wantings.items()]
         random.shuffle(key_value_list)
@@ -183,7 +183,7 @@ class Map:
         if self[future] is None:
             phage.energy -= self.loss_for_move
             self.set_org_on_map(phage, future)
-            self[now] = None
+            self.process_death(now)
         else:
             phage.energy -= self.loss_for_stay
 
@@ -207,7 +207,7 @@ class Map:
         """
         chloro_pos = self.find_by_radius(obj_type=ChloroPhage, radius=1, position=position)
         if chloro_pos:
-            self[chloro_pos] = None
+            self.process_death(chloro_pos)
             phage.energy += self.kill_gain
         else:
             phage.energy -= self.loss_for_stay
@@ -230,6 +230,7 @@ class Map:
         Processes death of a phage
         """
         self[position] = None
+        self.phage_positions.remove(position)
 
     def satisfy_desires(self, phage_wants: dict) -> None:
         """
@@ -274,7 +275,7 @@ class Map:
 if __name__ == "__main__":
     start = time.perf_counter()
     board = Map(100)
-    board.generate_creatures(num_of_enemies=50, num_of_preys=100)
+    board.generate_creatures(num_of_enemies=40, num_of_preys=100)
     simulation = board.cycle(100)
     print(time.perf_counter() - start)
     # give_vika = list(map(lambda state: give_to_vika(state), simulation))
