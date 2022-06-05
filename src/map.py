@@ -39,7 +39,7 @@ class Map:
     loss_for_stay = 2
     one_move_gain = 5
     kill_gain = 20
-    when_make_kids = 25
+    when_make_kids = 20
 
     def __init__(self, size=100) -> None:
         """
@@ -84,6 +84,13 @@ class Map:
         self[coords] = organism
         organism.position = coords
         self.phage_positions.append(coords)
+
+    def process_death(self, position: tuple) -> None:
+        """
+        Processes death of a phage
+        """
+        self[position] = None
+        self.phage_positions.remove(position)
 
     def get_random_positions(self, number: int) -> list[tuple]:
         """
@@ -226,13 +233,6 @@ class Map:
         else:
             print("DUUUUUUUDEEE YOU'VE FUCKED UP :(")
             exit(1)
-
-    def process_death(self, position: tuple) -> None:
-        """
-        Processes death of a phage
-        """
-        self[position] = None
-        self.phage_positions.remove(position)
 
     def satisfy_desires(self, phage_wants: dict) -> None:
         """
