@@ -14,6 +14,7 @@ Processes each creature's move, checks if a move is valid.
 
 """
 from __future__ import annotations
+
 from time import perf_counter
 from copy import deepcopy
 from random import sample
@@ -35,10 +36,12 @@ class Map:
     Map class
     Enter the length of side of a square
     """
-    loss_for_move = 5
-    loss_for_stay = 2
-    one_move_gain = 5
-    kill_gain = 20
+    # 7 8 9
+    # 7 7 6
+    loss_for_move = 7
+    loss_for_stay = 6
+    one_move_gain = 22
+    kill_gain = 40
     when_make_kids = 20
 
     def __init__(self, size=100) -> None:
@@ -46,7 +49,7 @@ class Map:
         creating 2D array representation
         """
         self.size = size
-        self.map = [[None for _ in range(self.size)] for _ in range(self.size)]
+        self.map = [[None for _ in range(size)] for _ in range(size)]
         self.phage_positions = []
 
     def __getitem__(self, position: tuple) -> None | Phage:
@@ -153,7 +156,7 @@ class Map:
         for position in self.phage_positions:
             phage = self[position]
             strangers = self.get_nearest_strangers(position=position,
-                                                   distance=5,
+                                                   distance=10,
                                                    stranger=ChloroPhage if isinstance(phage, HunterPhage)
                                                    else HunterPhage)
             if strangers:
@@ -214,10 +217,10 @@ class Map:
         For HunterPhage, kills a ChloroPhage if possible,
         otherwise stays and loses energy
         """
-        chloro_pos = self.find_by_radius(obj_type=ChloroPhage, radius=2, position=position)
+        chloro_pos = self.find_by_radius(obj_type=ChloroPhage, radius=3, position=position)
         if chloro_pos:
             self.process_death(chloro_pos)
-            phage.energy += self.kill_gain
+            phage.energy = min([100, phage.energy + self.kill_gain])
         else:
             phage.energy -= self.loss_for_stay
 
@@ -227,7 +230,8 @@ class Map:
         """
         phage = self[position]
         if isinstance(phage, ChloroPhage):
-            phage.energy += self.one_move_gain * (self.size - phage.position[0]) // self.size
+            add_value = self.one_move_gain * (self.size - phage.position[0]) // self.size
+            phage.energy = min([100, phage.energy + add_value])
         elif isinstance(phage, HunterPhage):
             self.kill_if_possible(position=position, phage=phage)
         else:
@@ -268,6 +272,11 @@ class Map:
         for i in range(generations):
             if not i % self.when_make_kids:
                 self.lets_make_kids()  # processes multiplication of phages
+                # hunters = [pos for pos in self.phage_positions if isinstance(self[pos], HunterPhage)]
+                # chloro = [pos for pos in self.phage_positions if isinstance(self[pos], ChloroPhage)]
+                # print(len(hunters))
+                # print(len(chloro))
+
             phage_wants = self.what_do_they_want_from_me()  # iterating through map, asking creatures their desires:
             self.satisfy_desires(phage_wants)  # performing what they want
             all_states.append(deepcopy(self.map))  # saving map state
@@ -290,8 +299,8 @@ class Map:
 if __name__ == "__main__":
     start = perf_counter()
     board = Map(100)
-    board.generate_creatures(num_of_enemies=60, num_of_preys=120)
-    simulation = board.cycle(100)
+    board.generate_creatures(num_of_enemies=60, num_of_preys=150)
+    simulation = board.cycle(200)
     print(perf_counter() - start)
     # give_vika = list(map(lambda state: give_to_vika(state), simulation))
     # magic(give_vika)

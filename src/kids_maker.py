@@ -55,7 +55,7 @@ def distance_satisfies(phage1: Phage, phage2: Phage) -> bool:
     check if phages are close enough to each other
     """
     distance = abs(phage1.position[0] - phage2.position[0]) + abs(phage1.position[1] - phage2.position[1])
-    return distance <= 10
+    return distance <= 15
 
 
 def create_pairs(list_of_phages: list) -> list:
@@ -96,7 +96,7 @@ def get_children(phage1: Phage, phage2: Phage, type_of_phage):
     """
     genome_1 = phage1.genome
     genome_2 = phage2.genome
-    number_of_children = random.randint(2, 4)
+    number_of_children = random.randint(3, 6)
     list_of_children = []
     for _ in range(number_of_children):
         genome = get_pair_genome(genome_1, genome_2)
