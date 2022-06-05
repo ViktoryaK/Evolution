@@ -7,24 +7,18 @@ import random
 from phage import Phage, ChloroPhage, HunterPhage
 
 
-# import sys
-# sys.setrecursionlimit(10**6)
-
-# TODO:
-
-
-def get_pair_genome(genom1, genom2, prob=0.05):
+def get_pair_genome(genome_1, genome_2, prob=0.05):
     """
     get father's and mother's genoms, merge them and return child
     """
     child = []
-    for i in range(len(genom1)):
-        child_genome = (genom1[i] + genom2[i]) // 2
+    for i in range(len(genome_1)):
+        child_genome = (genome_1[i] + genome_2[i]) // 2
         child.append(child_genome)
-    strange = random.uniform(0, 1)
-    if strange <= prob:
+    dr_strange = random.uniform(0, 1)
+    if dr_strange <= prob:
         minus = False
-        rand_ind = random.randint(0, len(child) - 1)
+        rand_ind = random.randint(0, 17)
         random_int_to_mutation = child[rand_ind]
         if int(random_int_to_mutation) < 0:
             int_to_change = bin(random_int_to_mutation)[3:]
@@ -39,28 +33,23 @@ def get_pair_genome(genom1, genom2, prob=0.05):
             first_part = list_of_bin_int[:slicer]
             second_part = list_of_bin_int[slicer:]
             change_better_part = random.uniform(0, 1)
+
             if change_better_part < 0.2:
                 random_ind = random.randint(0, len(first_part) - 1)
-                if first_part[random_ind] == "1":
-                    first_part[random_ind] = "0"
-                else:
-                    first_part[random_ind] = "1"
+                first_part[random_ind] = "0" if first_part[random_ind] == "1" else "1"
             elif change_better_part >= 0.2:
                 random_ind = random.randint(0, len(second_part) - 1)
-                if second_part[random_ind] == "1":
-                    second_part[random_ind] = "0"
-                else:
-                    second_part[random_ind] = "1"
+                second_part[random_ind] = "0" if second_part[random_ind] == "1" else "1"
 
             binary_to_merge = first_part + second_part
             joined_int = int("".join(binary_to_merge), 2)
             if minus:
-                joined_int = int("-" + str(joined_int))
+                joined_int *= -1
             child[rand_ind] = joined_int
     return child
 
 
-def distance_satisfies(phage1: Phage, phage2: Phage):
+def distance_satisfies(phage1: Phage, phage2: Phage) -> bool:
     """
     check if phages are close enough to each other
     """
@@ -68,7 +57,7 @@ def distance_satisfies(phage1: Phage, phage2: Phage):
     return distance <= 10
 
 
-def create_pairs(list_of_phages: list) -> list[tuple]:
+def create_pairs(list_of_phages: list) -> tuple[list, list]:
     """
     Creates list of tuples - two parents
     """
