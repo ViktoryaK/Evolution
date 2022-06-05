@@ -19,11 +19,11 @@ def magic(give_vika):
             for x in range(len(board)):
                 if board[y][x]:
                     if board[y][x] == "red":
-                        abs_y = abs(y - len(board)) - 1
-                        plt.scatter(x, abs_y, c=c[1], s=5, marker=8)
+                        # abs_y = abs(y - len(board)) - 1
+                        plt.plot(x, y, c=c[1], marker=8)
                     elif board[y][x] == "green":
-                        abs_y = abs(y - len(board)) - 1
-                        plt.scatter(x, abs_y, c=c[0], s=5, marker=(7, 2, 45))
+                        # abs_y = abs(y - len(board)) - 1
+                        plt.plot(x, y, c=c[0], marker=(7, 2, 45))
         camera.snap()
     anim = camera.animate(blit=True, interval=400)
     anim.save('try.mp4')
