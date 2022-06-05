@@ -39,7 +39,7 @@ class Map:
     loss_for_stay = 2
     one_move_gain = 5
     kill_gain = 20
-    when_make_kids = 20
+    when_make_kids = 25
 
     def __init__(self, size=100) -> None:
         """
