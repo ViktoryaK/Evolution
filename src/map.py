@@ -14,8 +14,7 @@ Processes each creature's move, checks if a move is valid.
 
 """
 from __future__ import annotations
-
-import time
+from time import perf_counter
 from copy import deepcopy
 from random import sample
 from phage import *
@@ -145,19 +144,19 @@ class Map:
         """
         phage_wantings = dict()
         for position in self.phage_positions:
-            elem = self[position]
+            phage = self[position]
             strangers = self.get_nearest_strangers(position=position,
                                                    distance=5,
-                                                   stranger=ChloroPhage if isinstance(elem, HunterPhage)
+                                                   stranger=ChloroPhage if isinstance(phage, HunterPhage)
                                                    else HunterPhage)
             if strangers:
                 position_of_stranger = self.choose_closest_stranger(position, strangers)
                 dy, dx = position[0] - position_of_stranger[0], position[1] - position_of_stranger[1]
             else:
                 dy, dx = None, None
-            phage_wantings[position] = elem.get_next_move(dy, dx)
+            phage_wantings[position] = phage.get_next_move(dy, dx)
 
-        key_value_list = [(key, value) for key, value in phage_wantings.items()]
+        key_value_list = [(position, action) for position, action in phage_wantings.items()]
         random.shuffle(key_value_list)
         return {item[0]: item[1] for item in key_value_list}
 
@@ -283,14 +282,16 @@ class Map:
         """
         phages_info = read_csv_file(path)
         new_map = Map(size)
-        for genome, position in phages_info:
-            new_map.set_org_on_map(Phage(genome), position)
+        for genome, position, type_of_obj in phages_info:
+            new_map.set_org_on_map(globals()[type_of_obj](genome), position)
         return new_map
 
 
 if __name__ == "__main__":
-    start = time.perf_counter()
+    start = perf_counter()
     board = Map(100)
     board.generate_creatures(num_of_enemies=60, num_of_preys=120)
     simulation = board.cycle(100)
-    print(time.perf_counter() - start)
+    print(perf_counter() - start)
+    # new_board = Map.create_map_from_file("phages.csv")
+    # new_board.cycle(15)
