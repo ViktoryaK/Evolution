@@ -22,7 +22,7 @@ from phage import *
 from brain import *
 from kids_maker import *
 from transform_to_file import *
-from visualisation import magic
+# from visualisation import magic
 
 
 def prepare_map_visualisation(one_board: list[list]) -> list[list]:
@@ -285,6 +285,7 @@ class Map:
         for i in range(generations):
             if not i % self.when_make_kids:
                 self.reproduce()  # processes multiplication of phages
+            self.cut_the_population()  # cuts phages population if filled more than 10 percent of the map
             phage_wants = self.get_phages_states()  # iterating through map, asking creatures their desires:
             self.satisfy_desires(phage_wants)  # performing what they want
             all_states.append(deepcopy(self.map))  # saving map state
