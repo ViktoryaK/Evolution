@@ -106,12 +106,13 @@ class Brain:
         Performs only one step.
         """
         # If hunter can't consume energy, but can move or, die, it should
-        if is_hunter and state.name == 'Input' and input_list[-1] is None and input_list[-2] is None:
+        if is_hunter and state.name == 'Input' and input_list[-1] is None and input_list[-2] is None and input_list[
+            0] <= 0:
             for st in state.connections:
                 if st[0].name == 'Move':
                     input_list[:] = input_list[1:]
                     return st[0]
-        # Receiving possible next states to go
+                    # Receiving possible next states to go
         next_states = []
         for next_state, conditions, weights in state.connections:
             if State.satisfies(input_list, conditions, weights):
