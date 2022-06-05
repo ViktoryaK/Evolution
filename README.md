@@ -5,6 +5,6 @@ The project reflects the simplest evolutionary processes and predator-prey relat
 ## How to run the project
 можна було б додати короткий модуль типу driver.py де можна вбивати кількість ходів і т.д. і який би чисто генерував мапу для користувача
 ## Visualisation
-![ezgif com-gif-maker](https://user-images.githubusercontent.com/91615687/172067477-03097049-688e-41a8-944e-7dff08edc6d9.gif)
+![ezgif com-gif-maker (1)](https://user-images.githubusercontent.com/91615687/172068708-65231ccb-8a5b-4cdc-8c5c-cc962846077d.gif)
 ## Results and conclusions
 *you can find out more details on code and simulation logic on Wiki pages
