@@ -15,6 +15,7 @@ Processes each creature's move, checks if a move is valid.
 """
 from __future__ import annotations
 
+import random
 from time import perf_counter
 from copy import deepcopy
 from random import sample
@@ -51,6 +52,7 @@ class Map:
         self.size = size
         self.map = [[None for _ in range(size)] for _ in range(size)]
         self.phage_positions = []
+        self.compare_val = int(0.1 * self.size ** 2)
 
     def __getitem__(self, position: tuple) -> None | Phage:
         """
@@ -265,6 +267,15 @@ class Map:
             for kid, position in zip(kids_phages, self.get_random_positions(len(kids_phages))):
                 self.set_org_on_map(kid, position)
 
+    def cut_if_needed(self):
+        """
+        Cuts the number of phages on the map if their quantity is too large
+        """
+        if len(self.phage_positions) > self.compare_val:
+            random.shuffle(self.phage_positions)
+            for pos in self.phage_positions[self.compare_val:]:
+                self.process_death(pos)
+
     def cycle(self, generations: int) -> list[list[list]]:
         """
         Runs a simulation 'generations' times
@@ -278,7 +289,7 @@ class Map:
                 chloro = [pos for pos in self.phage_positions if isinstance(self[pos], ChloroPhage)]
                 print(len(hunters))
                 print(len(chloro))
-
+            self.cut_if_needed()
             phage_wants = self.what_do_they_want_from_me()  # iterating through map, asking creatures their desires:
             self.satisfy_desires(phage_wants)  # performing what they want
             all_states.append(deepcopy(self.map))  # saving map state
@@ -301,7 +312,7 @@ class Map:
 if __name__ == "__main__":
     start = perf_counter()
     board = Map(100)
-    board.generate_creatures(num_of_enemies=60, num_of_preys=150)
+    board.generate_creatures(num_of_enemies=80, num_of_preys=150)
     simulation = board.cycle(200)
     print(perf_counter() - start)
     # give_vika = list(map(lambda state: give_to_vika(state), simulation))
