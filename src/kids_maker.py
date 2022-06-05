@@ -50,27 +50,17 @@ def get_pair_genome(genome_1, genome_2, prob=0.05):
     return child
 
 
-def distance_satisfies(phage1: Phage, phage2: Phage) -> bool:
-    """
-    check if phages are close enough to each other
-    """
-    distance = abs(phage1.position[0] - phage2.position[0]) + abs(phage1.position[1] - phage2.position[1])
-    return distance <= 15
-
-
 def create_pairs(list_of_phages: list) -> list:
     """
     Creates list of tuples - two parents
     """
     pairs = []
-    while list_of_phages:
-        phage1 = list_of_phages.pop()
-        for phage2 in list_of_phages[::-1]:
-            if distance_satisfies(phage1, phage2):
-                pairs.append((phage1, phage2))
-                list_of_phages.remove(phage2)
-                break
-    return pairs
+    try:
+        while list_of_phages:
+            pairs.append((list_of_phages.pop(), list_of_phages.pop()))
+        return pairs
+    except IndexError:
+        return pairs
 
 
 def start_reproducing(list_of_phages: list):
