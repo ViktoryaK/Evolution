@@ -15,17 +15,17 @@ Processes each creature's move, checks if a move is valid.
 """
 from __future__ import annotations
 
-import random
 from time import perf_counter
 from copy import deepcopy
-from random import sample
+from random import sample, shuffle
 from phage import *
 from brain import *
 from kids_maker import *
 from transform_to_file import *
+from visualisation import magic
 
 
-def give_to_vika(one_board: list[list]) -> list[list]:
+def prepare_map_visualisation(one_board: list[list]) -> list[list]:
     """
     Simplifies a map for showing it on a video
     """
@@ -69,17 +69,17 @@ class Map:
         """
         self.map[position[0]][position[1]] = value
 
-    def generate_creatures(self, num_of_enemies: int, num_of_preys: int) -> None:
+    def generate_random_phages(self, num_of_enemies: int, num_of_preys: int) -> None:
         """
         Fills a map with organisms.
         """
         for position in self.get_random_positions(num_of_enemies):
-            self.set_org_on_map(organism=HunterPhage(create_random_genome()), coords=position)
+            self.set_phage_on_map(organism=HunterPhage(create_random_genome()), coords=position)
 
         for position in self.get_random_positions(num_of_preys):
-            self.set_org_on_map(organism=ChloroPhage(create_random_genome()), coords=position)
+            self.set_phage_on_map(organism=ChloroPhage(create_random_genome()), coords=position)
 
-    def set_org_on_map(self, organism: Phage, coords: tuple) -> None:
+    def set_phage_on_map(self, organism: Phage, coords: tuple) -> None:
         """
         Sets a map with one 'organism'
         :param organism: Creature
@@ -90,7 +90,7 @@ class Map:
         organism.position = coords
         self.phage_positions.append(coords)
 
-    def process_death(self, position: tuple) -> None:
+    def process_phages_death(self, position: tuple) -> None:
         """
         Processes death of a phage
         """
@@ -106,13 +106,13 @@ class Map:
         try:
             return sample(free_squares, number)
         except ValueError:
-            random.shuffle(free_squares)
+            shuffle(free_squares)
             return free_squares
 
     def __repr__(self) -> str:
         return "\n".join([str([item for item in self.map[i]]) for i in range(self.size)])
 
-    def give_to_olli(self) -> tuple[list, list]:
+    def division_into_types(self) -> tuple[list, list]:
         """
         Returns two lists of phages of different types
         Special for Olli with love
@@ -124,7 +124,7 @@ class Map:
             chloro.append(obj) if isinstance(obj, ChloroPhage) else hunter.append(obj)
         return chloro, hunter
 
-    def get_nearest_strangers(self, position: tuple, stranger, distance=2) -> list[tuple]:
+    def get_nearest_opponents(self, position: tuple, stranger, distance=2) -> list[tuple]:
         """
         Returns a list of the closest strangers by number of steps to get to
         position - position of a Phage
@@ -142,7 +142,7 @@ class Map:
         return result
 
     @staticmethod
-    def choose_closest_stranger(pos: tuple, strangers: list[tuple]) -> tuple:
+    def choose_closest_opponent(pos: tuple, strangers: list[tuple]) -> tuple:
         """
         Returns the closest stranger to Phage's position - pos
         Strangers positions - 'strangers'
@@ -150,26 +150,26 @@ class Map:
         return list(sorted(strangers, key=lambda item: abs(pos[0] - item[0]) + abs(pos[1] - item[1])))[
             0] if strangers else None
 
-    def what_do_they_want_from_me(self) -> dict:
+    def get_phages_states(self) -> dict:
         """
         Iterating through map, asking creatures their desires
         """
         phage_wantings = dict()
         for position in self.phage_positions:
             phage = self[position]
-            strangers = self.get_nearest_strangers(position=position,
+            strangers = self.get_nearest_opponents(position=position,
                                                    distance=10,
                                                    stranger=ChloroPhage if isinstance(phage, HunterPhage)
                                                    else HunterPhage)
             if strangers:
-                position_of_stranger = self.choose_closest_stranger(position, strangers)
+                position_of_stranger = self.choose_closest_opponent(position, strangers)
                 dy, dx = position[0] - position_of_stranger[0], position[1] - position_of_stranger[1]
             else:
                 dy, dx = None, None
             phage_wantings[position] = phage.get_next_move(dy, dx)
 
         key_value_list = [(position, action) for position, action in phage_wantings.items()]
-        random.shuffle(key_value_list)
+        shuffle(key_value_list)
         return {item[0]: item[1] for item in key_value_list}
 
     def get_coords(self, now: tuple, action: str) -> tuple | None:
@@ -196,8 +196,8 @@ class Map:
         phage = self[now]
         if self[future] is None:
             phage.energy -= self.loss_for_move
-            self.set_org_on_map(phage, future)
-            self.process_death(now)
+            self.set_phage_on_map(phage, future)
+            self.process_phages_death(now)
         else:
             phage.energy -= self.loss_for_stay
 
@@ -221,7 +221,7 @@ class Map:
         """
         chloro_pos = self.find_by_radius(obj_type=ChloroPhage, radius=3, position=position)
         if chloro_pos:
-            self.process_death(chloro_pos)
+            self.process_phages_death(chloro_pos)
             phage.energy = min([100, phage.energy + self.kill_gain])
         else:
             phage.energy -= self.loss_for_stay
@@ -249,32 +249,32 @@ class Map:
                 action = action.name
                 coords = self.get_coords(position, action)
                 if coords is None:
-                    self.give_energy(position) if action == "Energy" else self.process_death(position)
+                    self.give_energy(position) if action == "Energy" else self.process_phages_death(position)
                 else:
                     self.make_phage_move(now=position, future=coords)
 
-    def lets_make_kids(self) -> None:
+    def reproduce(self) -> None:
         """
         Function that processes multiplication of phages and add children to the map
         """
         # two lists of phages of different types are created
-        chloro, hunters = self.give_to_olli()
+        chloro, hunters = self.division_into_types()
         correct_order = [chloro, hunters] if len(chloro) <= len(hunters) else [hunters, chloro]
         for similar_phages in correct_order:
             kids_phages = start_reproducing(deepcopy(similar_phages))
             for dead in similar_phages:
-                self.process_death(dead.position)
+                self.process_phages_death(dead.position)
             for kid, position in zip(kids_phages, self.get_random_positions(len(kids_phages))):
-                self.set_org_on_map(kid, position)
+                self.set_phage_on_map(kid, position)
 
-    def cut_if_needed(self):
+    def cut_the_population(self):
         """
         Cuts the number of phages on the map if their quantity is too large
         """
         if len(self.phage_positions) > self.compare_val:
-            random.shuffle(self.phage_positions)
+            shuffle(self.phage_positions)
             for pos in self.phage_positions[self.compare_val:]:
-                self.process_death(pos)
+                self.process_phages_death(pos)
 
     def cycle(self, generations: int) -> list[list[list]]:
         """
@@ -284,15 +284,11 @@ class Map:
         all_states = []
         for i in range(generations):
             if not i % self.when_make_kids:
-                self.lets_make_kids()  # processes multiplication of phages
-                hunters = [pos for pos in self.phage_positions if isinstance(self[pos], HunterPhage)]
-                chloro = [pos for pos in self.phage_positions if isinstance(self[pos], ChloroPhage)]
-                print(len(hunters))
-                print(len(chloro))
-            self.cut_if_needed()
-            phage_wants = self.what_do_they_want_from_me()  # iterating through map, asking creatures their desires:
+                self.reproduce()  # processes multiplication of phages
+            phage_wants = self.get_phages_states()  # iterating through map, asking creatures their desires:
             self.satisfy_desires(phage_wants)  # performing what they want
             all_states.append(deepcopy(self.map))  # saving map state
+
         write_in_csv_file([self[position] for position in self.phage_positions])  # writes phages to the file
         return all_states
 
@@ -305,17 +301,18 @@ class Map:
         phages_info = read_csv_file(path)
         new_map = Map(size)
         for genome, position, type_of_obj in phages_info:
-            new_map.set_org_on_map(globals()[type_of_obj](genome), position)
+            new_map.set_phage_on_map(globals()[type_of_obj](genome), position)
         return new_map
 
 
 if __name__ == "__main__":
     start = perf_counter()
     board = Map(100)
-    board.generate_creatures(num_of_enemies=80, num_of_preys=150)
-    simulation = board.cycle(200)
+    board.generate_random_phages(num_of_enemies=80, num_of_preys=150)
+    simulation = board.cycle(300)
     print(perf_counter() - start)
-    # give_vika = list(map(lambda state: give_to_vika(state), simulation))
+
+    # give_vika = list(map(lambda state: prepare_map_visualisation(state), simulation))
     # magic(give_vika)
     # new_board = Map.create_map_from_file("phages.csv")
     # new_board.cycle(15)
