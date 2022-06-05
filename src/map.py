@@ -256,7 +256,9 @@ class Map:
         Function that processes multiplication of phages and add children to the map
         """
         # two lists of phages of different types are created
-        for similar_phages in self.give_to_olli():
+        chloro, hunters = self.give_to_olli()
+        correct_order = [chloro, hunters] if len(chloro) <= len(hunters) else [hunters, chloro]
+        for similar_phages in correct_order:
             kids_phages = start_reproducing(deepcopy(similar_phages))
             for dead in similar_phages:
                 self.process_death(dead.position)
@@ -272,10 +274,10 @@ class Map:
         for i in range(generations):
             if not i % self.when_make_kids:
                 self.lets_make_kids()  # processes multiplication of phages
-                # hunters = [pos for pos in self.phage_positions if isinstance(self[pos], HunterPhage)]
-                # chloro = [pos for pos in self.phage_positions if isinstance(self[pos], ChloroPhage)]
-                # print(len(hunters))
-                # print(len(chloro))
+                hunters = [pos for pos in self.phage_positions if isinstance(self[pos], HunterPhage)]
+                chloro = [pos for pos in self.phage_positions if isinstance(self[pos], ChloroPhage)]
+                print(len(hunters))
+                print(len(chloro))
 
             phage_wants = self.what_do_they_want_from_me()  # iterating through map, asking creatures their desires:
             self.satisfy_desires(phage_wants)  # performing what they want
