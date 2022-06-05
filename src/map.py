@@ -253,8 +253,8 @@ class Map:
         """
         # two lists of phages of different types are created
         for similar_phages in self.give_to_olli():
-            kids_phages, dead_phages = start_reproducing(similar_phages)
-            for dead in dead_phages:
+            kids_phages = start_reproducing(deepcopy(similar_phages))
+            for dead in similar_phages:
                 self.process_death(dead.position)
             for kid, position in zip(kids_phages, self.get_random_positions(len(kids_phages))):
                 self.set_org_on_map(kid, position)
@@ -293,5 +293,7 @@ if __name__ == "__main__":
     board.generate_creatures(num_of_enemies=60, num_of_preys=120)
     simulation = board.cycle(100)
     print(perf_counter() - start)
+    # give_vika = list(map(lambda state: give_to_vika(state), simulation))
+    # magic(give_vika)
     # new_board = Map.create_map_from_file("phages.csv")
     # new_board.cycle(15)
