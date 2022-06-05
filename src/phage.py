@@ -91,14 +91,14 @@ def test_phage():
     for _ in range(0, 100):
         genome = create_random_genome()
         print("Genome:", genome)
-        phage = ChloroPhage(genome)
+        phage = HunterPhage(genome)
         phage.energy = random.randint(0, 100)
         phage.position = (random.randint(0, 100), random.randint(0, 100))
-        res.append(phage.get_next_move(random.randint(-2, 2), random.randint(-2, 2)))
+        res.append(phage.get_next_move(random.randint(-3, 3), random.randint(-3, 3)))
     return res
 
 
 if __name__ == '__main__':
     res = test_phage()
-    for string in ["Left", "Right", "Up", "Down"]:
+    for string in ["Left", "Right", "Up", "Down", "Energy", "Death"]:
         print(string, len(list(filter(lambda x: x.name == string, res))))
