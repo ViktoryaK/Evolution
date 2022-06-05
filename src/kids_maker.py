@@ -56,9 +56,8 @@ def create_pairs(list_of_phages: list) -> list:
     """
     pairs = []
     try:
-        while list_of_phages:
+        while True:
             pairs.append((list_of_phages.pop(), list_of_phages.pop()))
-        return pairs
     except IndexError:
         return pairs
 
