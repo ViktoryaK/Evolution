@@ -5,6 +5,7 @@ Create pairs, return dead phages
 
 import random
 from phage import Phage, ChloroPhage, HunterPhage
+from brain import Brain
 
 
 def get_pair_genome(genome_1, genome_2, prob=0.05):
@@ -57,49 +58,19 @@ def distance_satisfies(phage1: Phage, phage2: Phage) -> bool:
     return distance <= 10
 
 
-def create_pairs(list_of_phages: list) -> tuple[list, list]:
+def create_pairs(list_of_phages: list) -> list:
     """
     Creates list of tuples - two parents
     """
     pairs = []
-    dead_phages = []
     while list_of_phages:
-        phage1 = list_of_phages[-1]
-        dead_phages.append(list_of_phages.pop())
+        phage1 = list_of_phages.pop()
         for phage2 in list_of_phages[::-1]:
             if distance_satisfies(phage1, phage2):
                 pairs.append((phage1, phage2))
                 list_of_phages.remove(phage2)
-                dead_phages.append(phage2)
                 break
-    return pairs, dead_phages
-
-
-# def create_pairs(list_of_phages: list) -> list[tuple]:
-#     """
-#     Creates list of tuples - two parents
-#     """
-#     pairs = []
-#     dead_phages = []
-
-#     def help(phages: list[Phage]):
-#         if not phages:
-#             return pairs
-#         first = phages[0]
-#         for phage in phages[1:]:
-#             if distance_satisfies(first, phage):
-#                 pairs.append((first, phage))
-#                 for elem in (first, phage):
-#                     phages.remove(elem)
-#                     dead_phages.append(elem)
-#                 help(phages)
-#                 return
-#         phages.remove(first)
-#         # dead_phages.append(first)
-#         help(phages)
-
-# help(list_of_phages)
-# return pairs, dead_phages
+    return pairs
 
 
 def start_reproducing(list_of_phages: list):
@@ -108,15 +79,15 @@ def start_reproducing(list_of_phages: list):
     return list of kids(full of objects), dead phages
     """
     if len(list_of_phages) == 0:
-        return [], []
+        return []
     result_of_reproduction = []
     type_of_phage = ChloroPhage if isinstance(list_of_phages[0], ChloroPhage) is True else HunterPhage
-    pairs, dead_phages = create_pairs(list_of_phages)
+    pairs = create_pairs(list_of_phages)
     for pair in pairs:
         list_of_children = get_children(*pair, type_of_phage)
         for kid in list_of_children:
             result_of_reproduction.append(kid)
-    return result_of_reproduction, dead_phages
+    return result_of_reproduction
 
 
 def get_children(phage1: Phage, phage2: Phage, type_of_phage):
@@ -128,6 +99,8 @@ def get_children(phage1: Phage, phage2: Phage, type_of_phage):
     number_of_children = random.randint(2, 4)
     list_of_children = []
     for _ in range(number_of_children):
-        new_phage = type_of_phage(get_pair_genome(genome_1, genome_2))
-        list_of_children.append(new_phage)
+        genome = get_pair_genome(genome_1, genome_2)
+        if Brain.is_correct_genome(genome):
+            new_phage = type_of_phage(genome)
+            list_of_children.append(new_phage)
     return list_of_children
