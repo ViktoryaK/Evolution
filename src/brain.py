@@ -79,9 +79,9 @@ class Brain:
                                   [genome[2], genome[3], genome[4], genome[5]])
         move_state.add_connection(right_state, ['ignore', 'ignore', '>=', 'ignore'],
                                   [genome[6], genome[7], genome[8], genome[9]])
-        move_state.add_connection(up_state, ['ignore', 'ignore', 'ignore', 'ignore'],
+        move_state.add_connection(up_state, ['ignore', 'ignore', 'ignore', '<='],
                                   [genome[10], genome[11], genome[12], genome[13]])
-        move_state.add_connection(down_state, ['ignore', '<=', 'ignore', '>='],
+        move_state.add_connection(down_state, ['ignore', 'ignore', 'ignore', '>='],
                                   [genome[14], genome[15], genome[16], genome[17]])
 
     @staticmethod
@@ -136,8 +136,8 @@ class Brain:
         current_state = self.input_state
         while not current_state.is_terminal:
             current_state = self.forward(current_state, input_list, self._is_hunter)
-        # if self._is_hunter and current_state.name == 'Energy':
-            # print("Hunter has eaten a chlorophage!")
+        if self._is_hunter and current_state.name == 'Energy':
+            print("Hunter has eaten a chlorophage!")
         return current_state
 
 
@@ -149,7 +149,7 @@ def create_random_genome():
         try:
             genome = [random.randint(0, 100) for _ in range(18)]
             for gen in 4, 5, 8, 9, 12, 13, 16, 17:
-                genome[gen] = random.choice([-3, -2, -1, 1, 2, 3])
+                genome[gen] = random.choice([-2, -1, 1, 2])
             assert Brain.is_correct_genome(genome)
             return genome
         except AssertionError:
