@@ -108,9 +108,9 @@ class Brain:
         # If hunter can't consume energy, but can move or, die, it should
         if is_hunter and state.name == 'Input' and input_list[-1] is None and input_list[-2] is None and input_list[
             0] > 0:
+            input_list[:] = input_list[1:]
             for st in state.connections:
                 if st[0].name == 'Move':
-                    input_list[:] = input_list[1:]
                     return st[0]
                     # Receiving possible next states to go
         next_states = []
@@ -138,8 +138,8 @@ class Brain:
         current_state = self.input_state
         while not current_state.is_terminal:
             current_state = self.forward(current_state, input_list, self._is_hunter)
-        if self._is_hunter and current_state.name == 'Energy':
-            print("Hunter has eaten a chlorophage!")
+        # if self._is_hunter and current_state.name == 'Energy':
+        #     print("Hunter has eaten a chlorophage!")
         return current_state
 
 
