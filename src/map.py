@@ -158,7 +158,7 @@ class Map:
         for position in self.phage_positions:
             phage = self[position]
             strangers = self.get_nearest_opponents(position=position,
-                                                   distance=10,
+                                                   distance=3,
                                                    stranger=ChloroPhage if isinstance(phage, HunterPhage)
                                                    else HunterPhage)
             if strangers:
