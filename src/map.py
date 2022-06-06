@@ -20,9 +20,9 @@ from copy import deepcopy
 from random import sample, shuffle
 from phage import *
 from brain import *
-from kids_maker import *
+from reproducing import *
 from transform_to_file import *
-# from visualisation import magic
+from visualisation import magic
 
 
 def prepare_map_visualisation(one_board: list[list]) -> list[list]:
