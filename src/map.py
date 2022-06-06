@@ -22,7 +22,7 @@ from phage import *
 from brain import *
 from reproducing import *
 from transform_to_file import *
-from visualisation import magic
+# from visualisation import magic
 
 
 def prepare_map_visualisation(one_board: list[list]) -> list[list]:
@@ -288,7 +288,7 @@ class Map:
             self.cut_the_population()  # cuts phages population if filled more than 10 percent of the map
             phage_wants = self.get_phages_states()  # iterating through map, asking creatures their desires:
             self.satisfy_desires(phage_wants)  # performing what they want
-            all_states.append(prepare_map_visualisation(self.map))  # saving map state
+            all_states.append(deepcopy(self.map))  # saving map state
         write_in_csv_file([self[position] for position in self.phage_positions])  # writes phages to the file
         return all_states
 
@@ -312,6 +312,6 @@ if __name__ == "__main__":
     simulation = board.cycle(200)
     print(perf_counter() - start)
 
-    # magic(simulation)
+    # magic(list(map(lambda x: prepare_map_visualisation(x), simulation)))
     # new_board = Map.create_map_from_file("phages.csv")
     # new_board.cycle(15)
