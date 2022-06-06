@@ -237,7 +237,7 @@ class Map:
         elif isinstance(phage, HunterPhage):
             self.kill_if_possible(position=position, phage=phage)
         else:
-            print("DUUUUUUUDEEE YOU'VE FUCKED UP :(")
+            print("something went wrong :(")
             exit(1)
 
     def satisfy_desires(self, phage_wants: dict) -> None:
@@ -288,8 +288,7 @@ class Map:
             self.cut_the_population()  # cuts phages population if filled more than 10 percent of the map
             phage_wants = self.get_phages_states()  # iterating through map, asking creatures their desires:
             self.satisfy_desires(phage_wants)  # performing what they want
-            all_states.append(deepcopy(self.map))  # saving map state
-
+            all_states.append(prepare_map_visualisation(self.map))  # saving map state
         write_in_csv_file([self[position] for position in self.phage_positions])  # writes phages to the file
         return all_states
 
@@ -310,10 +309,9 @@ if __name__ == "__main__":
     start = perf_counter()
     board = Map(100)
     board.generate_random_phages(num_of_enemies=80, num_of_preys=150)
-    simulation = board.cycle(300)
+    simulation = board.cycle(200)
     print(perf_counter() - start)
 
-    # give_vika = list(map(lambda state: prepare_map_visualisation(state), simulation))
-    # magic(give_vika)
+    # magic(simulation)
     # new_board = Map.create_map_from_file("phages.csv")
     # new_board.cycle(15)
