@@ -11,19 +11,23 @@ from celluloid import Camera
 
 def magic(give_vika):
     plt.axis([0, 100, 0, 100])
-    c = ['#5fb458', '#bb1212']
+    c2 = ['#576b37', '#e44b30']
     fig = plt.figure()
     camera = Camera(fig)
+    plt.xticks(color='w')
+    plt.yticks(color='w')
+    i = 1
     for board in give_vika:
+        plt.text(40, 105, s="Generation: " + str(i//20+1), animated=True)
         for y in range(len(board)):
             for x in range(len(board)):
                 if board[y][x]:
                     if board[y][x] == "red":
-                        # abs_y = abs(y - len(board)) - 1
-                        plt.plot(x, y, c=c[1], marker=8)
+                        plt.plot(x, y, c=c2[1], marker=4)
                     elif board[y][x] == "green":
-                        # abs_y = abs(y - len(board)) - 1
-                        plt.plot(x, y, c=c[0], marker=(7, 2, 45))
+                        plt.plot(x, y, c=c2[0], marker="h")
         camera.snap()
-    anim = camera.animate(blit=True, interval=400)
-    anim.save('try.mp4')
+        print(i)
+        i += 1
+    anim = camera.animate(blit=True, interval=200)
+    anim.save('try6.mp4')
